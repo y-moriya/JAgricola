@@ -1,0 +1,4 @@
+Choose an action in the first tab on the left !
+In the second tab you can generate Food if you have some facilities to do it.
+You can leave a message for other players.
+(Only the last 5 messages are displayed.)
