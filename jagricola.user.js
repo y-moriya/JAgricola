@@ -53,7 +53,6 @@
 
     function createPlayCards() {
         $("#played").empty();
-
         var plays = $("#tabCartesPosees td");
         var cardname = "";
         plays.each(function(i) {
@@ -90,22 +89,18 @@
         });
     }
 
-    function showExpPlus(piJ, id) {
-        $('#dvExploitation').load('agrajax.php?id=' + id + '&j=' + piJ + '&a=exploitation');
-        $.get('agrajax.php', {
-            id : id.toString(),
-            j : piJ.toString(),
-            a : "cartes"
-        }, function(data) {
+    function showExpPlus(piJ, agrid) {
+        $('#dvExploitation').load('agrajax.php?id=' + agrid + '&j=' + piJ + '&a=exploitation');
+        $.get('agrajax.php', { id : agrid, j : piJ.toString(), a : "cartes" }, function(data) {
             var newHtml = $(data);
             $('#dvCartesPosees').html(newHtml);
             createPlayCards();
         });
-        $('#dvAttente').load('agrajax.php?id=' + id + '&j=' + piJ + '&a=attente');
+        $('#dvAttente').load('agrajax.php?id=' + agrid + '&j=' + piJ + '&a=attente');
     }
 
     function getAgricolaId() {
-        return document.location.href.match(/\d+$/)[0];
+        return document.location.href.match(/\d+/)[0];
     }
 
     function getCardNumber(cardname) {
