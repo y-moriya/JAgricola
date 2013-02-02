@@ -12,14 +12,17 @@
 // TODO: メッセージ洗い出して日本語化
 
 (function() {
-    document.body.innerHTML = document.body.innerHTML.replace("Choose an action in the first tab on the left !", "左タブの一番上から選んでね。");
     
     var cardJson = initializeCardJson();
-    createCardSpace();
-    createCards();
-    createDraftCards();
-    createPlayCards();
-    hackShowExp();
+    main();
+    
+    function main() {
+        createCardSpace();
+        createCards();
+        createDraftCards();
+        createPlayCards();
+        hackShowExp();
+    }
     
     function createCardSpace() {
         $("#conteneur").after('<div id="jagmsg" style="margin:5px; padding:5px;" />');
@@ -80,30 +83,53 @@
     }
     
     function hackShowExp() {
+        var id = getAgricolaId();
         $('a[href*="showExp"]').each(function() {
             var target = this.href.match(/showExp\((\d+)\)/);
             target = RegExp.$1;
             this.href = "#";
             $(this).click(function() {
-                showExpPlus(target);
+                showExpPlus(target, id);
             });
         });
     }
     
-    function showExpPlus(piJ) {
-      $('#dvExploitation').load('agrajax.php?id=606757&j='+piJ+'&a=exploitation');
-      $.get('agrajax.php',{ id: "606757", j: piJ.toString(), a: "cartes" }, function(data) {
+    function showExpPlus(piJ, id) {
+      $('#dvExploitation').load('agrajax.php?id='+id+'&j='+piJ+'&a=exploitation');
+      $.get('agrajax.php',{ id: id.toString(), j: piJ.toString(), a: "cartes" }, function(data) {
         var newHtml = $(data);
         $('#dvCartesPosees').html(newHtml);
         createPlayCards();
       });
-      $('#dvAttente').load('agrajax.php?id=606757&j='+piJ+'&a=attente');
+      $('#dvAttente').load('agrajax.php?id='+id+'&j='+piJ+'&a=attente');
+    }
+    
+    function getAgricolaId() {
+        return document.location.href.match(/\d+$/)[0];
     }
     
     function getCardNumber(cardname) {
-        return cardname.match(/^\d+/);
+        return cardname.match(/^\d+/)[0];
     }
     
+    /*
+     * 一旦コメントアウト。いらなそー。
+    translateMessages();
+    function translateMessages() {
+        document.body.innerHTML = document.body.innerHTML
+                .replace("Choose an action in the first tab on the left !", "左の一番上のタブからアクションを選んでね。")
+                .replace("In the second tab you can generate Food if you have some facilities to do it.", "かまどがあれば、二番目のタブでいつでも家畜を食料に変えられるよ")
+                .replace("House building and/or stables building", "増築 and/or 厩")
+                .replace("Starting player and/or Minor Improvement", "スタプレ and/or 小進歩")
+                .replace("Sow<br>and/or<br>Baking bread", "種を蒔く and/or パンを焼く")
+                .replace("Ploughing", "畑")
+                .replace("Grain", "小麦")
+                .replace("Occupation", "職業")
+                .replace("Day labourer", "日雇い")
+                .replace("Wood", "木");
+    }
+    */
+   
     function initializeCardJson() {
         var json = {
             "1": "1 かまど 以下の品をいつでも食料にできる。野菜：2　羊：2　猪：2　牛：3　「パンを焼く」のアクションで、小麦：2",
