@@ -8,8 +8,6 @@
 // @grant       hoge
 // ==/UserScript==
 
-// TODO: 手札を表示する箱を用意して日本語で表示。
-// TODO: 各カードクリック？で詳細表示。
 // TODO: メッセージ洗い出して日本語化
 
 (function() {
@@ -19,6 +17,8 @@
     createCardSpace();
     createCards();
     createDraftCards();
+    createPlayCards();
+    hackShowExp();
     
     function createCardSpace() {
         $("#conteneur").after('<div id="jagmsg" style="margin:5px; padding:5px;" />');
@@ -61,6 +61,35 @@
         });
     }
     
+    function createPlayCards() {
+        // TODO: show japanese
+    }
+    
+    function hackShowExp() {
+        evalInPage(function () {
+            showExp = function(piJ){
+                // original->
+                $('#dvExploitation').load('agrajax.php?id=606757&j='+piJ+'&a=exploitation');
+                $.get('agrajax.php',{ id: "606757", j: piJ, a: "cartes" }, function(data) {
+                    var newHtml = $(data);
+                    newHtml.find('td.clCarteMf').cluetip({cluetipClass: 'agricola', clickThrough:true, cluezIndex: 3000, waitImage: false, local:false, width: '150px', cursor: 'pointer', showTitle: true});
+                
+                    $('#dvCartesPosees').html(newHtml);
+                });
+                $('#dvAttente').load('agrajax.php?id=606757&j='+piJ+'&a=attente');
+                // <-original
+                
+                // hacking
+                // TODO: show japanese
+            }
+        });
+    }
+    
+    function evalInPage(fun) {
+      location.href = "javascript:void (" + fun + ")()";
+    }
+ 
+        
     function getCardNumber(cardname) {
         return cardname.match(/^\d+/);
     }
