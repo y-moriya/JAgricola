@@ -3,15 +3,16 @@
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/*
-// @version     1
+// @version     1.1
 // @require     http://code.jquery.com/jquery-1.8.2.js
+// @require     https://raw.github.com/cho45/jsdeferred/master/jsdeferred.userscript.js
 // @grant       hoge
 // ==/UserScript==
 
 // TODO: メッセージ洗い出して日本語化
 
 (function() {
-	document.body.innerHTML = document.body.innerHTML.replace("Choose an action in the first tab on the left !", "左タブの一番上から選んでね。");
+    document.body.innerHTML = document.body.innerHTML.replace("Choose an action in the first tab on the left !", "左タブの一番上から選んでね。");
     
     var cardJson = initializeCardJson();
     createCardSpace();
@@ -22,14 +23,19 @@
     
     function createCardSpace() {
         $("#conteneur").after('<div id="jagmsg" style="margin:5px; padding:5px;" />');
-        $("#jagmsg").append('<div id="hands"><h3>手札</h3></div>');
+        $("#jagmsg").append('<div id="plays"><h3>プレイカード</h3></div>').append('<div id="hands"><h3>手札</h3></div>');
+        $("#plays").append('<dl id="played"><dt></dt></dl>');
         $("#hands").append('<dl id="minor" />').append('<dl id="occup" />');
         $("#minor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
         $("#occup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
+        $("#playminor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
+        $("#playoccup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
         $("form[name=fmDraft]").before('<div id="active" />');
     }
     
     function createCards() {
+        $("#played").empty();
+        
         var minors = $('.tableauAmelioration table:eq(0) td');
         var cardname = "";
         minors.each(function(i) {
@@ -43,6 +49,18 @@
             cardname = occups[i].title;
             
             $("#occup").append("<dd>" + createCardDesc(cardname) + "</dd>");
+        });
+    }
+    
+    function createPlayCards() {
+        $("#played").empty();
+    
+        var plays = $("#tabCartesPosees td");
+        var cardname = "";
+        plays.each(function(i) {
+            cardname = plays[i].title;
+            
+            $("#played").append("<dd>" + createCardDesc(cardname) + "</dd>");
         });
     }
     
@@ -61,35 +79,28 @@
         });
     }
     
-    function createPlayCards() {
-        // TODO: show japanese
-    }
-    
     function hackShowExp() {
-        evalInPage(function () {
-            showExp = function(piJ){
-                // original->
-                $('#dvExploitation').load('agrajax.php?id=606757&j='+piJ+'&a=exploitation');
-                $.get('agrajax.php',{ id: "606757", j: piJ, a: "cartes" }, function(data) {
-                    var newHtml = $(data);
-                    newHtml.find('td.clCarteMf').cluetip({cluetipClass: 'agricola', clickThrough:true, cluezIndex: 3000, waitImage: false, local:false, width: '150px', cursor: 'pointer', showTitle: true});
-                
-                    $('#dvCartesPosees').html(newHtml);
-                });
-                $('#dvAttente').load('agrajax.php?id=606757&j='+piJ+'&a=attente');
-                // <-original
-                
-                // hacking
-                // TODO: show japanese
-            }
+        $('a[href*="showExp"]').each(function() {
+            var target = this.href.match(/showExp\((\d+)\)/);
+            target = RegExp.$1;
+            this.href = "#";
+            $(this).click(function() {
+                showExpPlus(target);
+            });
         });
     }
     
-    function evalInPage(fun) {
-      location.href = "javascript:void (" + fun + ")()";
+    
+    function showExpPlus(piJ) {
+      $('#dvExploitation').load('agrajax.php?id=606757&j='+piJ+'&a=exploitation');
+      $.get('agrajax.php',{ id: "606757", j: piJ.toString(), a: "cartes" }, function(data) {
+        var newHtml = $(data);
+        $('#dvCartesPosees').html(newHtml);
+        createPlayCards();
+      });
+      $('#dvAttente').load('agrajax.php?id=606757&j='+piJ+'&a=attente');
     }
- 
-        
+    
     function getCardNumber(cardname) {
         return cardname.match(/^\d+/);
     }
