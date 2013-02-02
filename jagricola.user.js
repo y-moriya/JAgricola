@@ -90,7 +90,6 @@
         });
     }
     
-    
     function showExpPlus(piJ) {
       $('#dvExploitation').load('agrajax.php?id=606757&j='+piJ+'&a=exploitation');
       $.get('agrajax.php',{ id: "606757", j: piJ.toString(), a: "cartes" }, function(data) {
