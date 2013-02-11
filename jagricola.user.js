@@ -24,7 +24,8 @@
     var lastTurn = 0;
     var ajaxmsec = 10 * 1000;
     var yourTurnMsg = "Choose an action in the first tab on the left !";
-    var reload = !($('.clInfo').html().match(yourTurnMsg));
+    var yourFeedingMsg = "Last chance to make room for your new born animals, it will be too late during the breeding phase!":
+    var reload = !($('.clInfo').html().match(yourTurnMsg) || $('#dvGererAlimentationContent').html().match(yourFeedingMsg));
     var AUDIO_LIST = {
         "bell": new Audio("http://heaven.gunjobiyori.com/up1157.wav")
     };
@@ -119,7 +120,7 @@
     function setAjaxHistory() {
         if (reload) {
             $.get('partie.php', { id : agrid }, function(data) {
-                if (data.match(yourTurnMsg)) {
+                if (data.match(yourTurnMsg) || data.match(yourFeedingMsg)) {
                     AUDIO_LIST["bell"].play();
                     alert("It's your turn!");
                     
