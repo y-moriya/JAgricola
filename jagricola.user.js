@@ -9,16 +9,32 @@
 // @grant       hoge
 // ==/UserScript==
 
-// TODO: メッセージ洗い出して日本語化
+// TODO: HISTORYを定期的に見てログ積み上げ、自分のターンが来たら通知
 
 (function() {
 
+    // class
+    var Action = function(round, player, action) {
+        this.round = round;
+        this.player = player;
+        this.action = action;
+    };
+
+    // global variable
     var cardJson = initializeCardJson();
+    var agrid = getAgricolaId();
+    var lastTurn = 0;
+    var ajaxmsec = 10 * 1000;
+    var yourTurnMsg = "Choose an action in the first tab on the left !";
+    var reload = !($('.clInfo').html().match(yourTurnMsg));
+    
+    // main functions
     createCardSpace();
     createCards();
     createDraftCards();
     createPlayCards();
     hackShowExp();
+    setAjaxHistory();
 
     function createCardSpace() {
         $("#conteneur").after('<div id="jagmsg" style="margin:5px; padding:5px;" />');
@@ -30,6 +46,7 @@
         $("#playminor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
         $("#playoccup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
         $("form[name=fmDraft]").before('<div id="active" />');
+        $("form[name=fmMiniForum]").after('<div id="history" />');
     }
 
     function createCards() {
@@ -78,18 +95,17 @@
     }
 
     function hackShowExp() {
-        var id = getAgricolaId();
         $('a[href*="showExp"]').each(function() {
             var target = this.href.match(/showExp\((\d+)\)/);
             target = RegExp.$1;
             this.href = "#";
             $(this).click(function() {
-                showExpPlus(target, id);
+                showExpPlus(target);
             });
         });
     }
 
-    function showExpPlus(piJ, agrid) {
+    function showExpPlus(piJ) {
         $('#dvExploitation').load('agrajax.php?id=' + agrid + '&j=' + piJ + '&a=exploitation');
         $.get('agrajax.php', { id : agrid, j : piJ.toString(), a : "cartes" }, function(data) {
             var newHtml = $(data);
@@ -97,6 +113,89 @@
             createPlayCards();
         });
         $('#dvAttente').load('agrajax.php?id=' + agrid + '&j=' + piJ + '&a=attente');
+    }
+    
+    function setAjaxHistory() {
+        if (reload) {
+            $.get('partie.php', { id : agrid }, function(data) {
+                if (data.match(yourTurnMsg)) {
+                    alert("It's your turn!");
+                    location.href = location.href;
+                }
+            });
+        }
+    
+        $.get('historique.php', { id : agrid }, function(data) {
+            
+            var players = getPlayers(data);
+            var actions = getActions(data, players);
+            
+            if (lastTurn == 0 && actions.length >= 5) {
+                lastTurn = actions.length - 5;
+            }
+            
+            for (i = lastTurn; i < actions.length; i = i + 1) {
+                var act = actions[i];
+                $("#history").prepend("<p>round: " + act.round + ", player: " + act.player + ", action: " + act.action + "</p>");
+            }
+            
+            lastTurn = actions.length;
+        }); 
+        
+        setTimeout(setAjaxHistory, ajaxmsec);
+    }
+    
+    function getPlayers(data) {
+        var headers = data.match(/<th .+?<\/th>/g);
+        var players = [];
+        for (i = 0; i < headers.length; i = i + 1) {
+            if (i == 0) {
+                continue;
+            }
+            if (headers[i].match(/div>&nbsp;(.+)<div/)) {
+                players[i-1] = RegExp.$1;
+            }
+        }
+        
+        return players;
+    }
+
+    function getActions(data, players) {
+        var actions = [];
+        var rounds = [];
+        var round = 0;
+        var n = 0;
+        var player = 0;
+        var act = "";
+        var rows = data.match(/<tr .+?<\/tr>/g);
+        for (i = 0; i < rows.length; i = i + 1) {
+            var datas = rows[i].match(/<td .+?<\/td>/g);
+            for (j = 0; j < datas.length; j = j + 1) {
+                
+                if (datas.length != players.length && j == 0) {
+                    round = round + 1;
+                    continue;
+                }
+                
+                if (datas[j].match("&nbsp;")) {
+                    continue;
+                }
+                
+                player = j;
+                if (datas.length != players.length) {
+                    player = j - 1;
+                }
+                
+                if (datas[j].match(/>(\d+)<\/div>(.+)<\/td>/)) {
+                    n = RegExp.$1;
+                    act = RegExp.$2;
+                    
+                    actions[Number(n) - 1] = new Action(round, players[player], act);
+                }
+            }
+        }
+        
+        return actions;
     }
 
     function getAgricolaId() {
@@ -263,7 +362,7 @@
             "132" : "132 レンガの家増築 このカードを出すとすぐに、レンガの家が1部屋増築される。 コスト: 葦1・レ4 移動進歩",
             "133" : "133 搾乳台 収穫の畑フェイズのたびに牛を1/3/5頭持っていればそれぞれ食料1/2/3を得る。ゲーム終了時に牛2頭につきボーナス1点を得る。 コスト: 木1 条件: 職業2",
             "134" : "134 牛車 このカードを出したらすぐ、まだ始まっていないラウンドの数だけ（ただし最大3まで）畑を耕せる。 コスト: 木3 条件: 牛2",
-            "135" : "135 ウマ ゲーム終了時、1種類の動物を1頭も持っていなかったら、ボーナス2点を得る。（いない家畜の代わりとして扱う。このカードの効果で家畜一種を補完した状態でも、職業カード『村長』のボーナスを獲得できる。）",
+            "135" : "135 ウマ ゲーム終了時、1種類の動物を1頭も持っていなかったら、ボーナス2点を得る。（いない家畜の代わりとして扱う。ただし、このカードの効果で家畜一種を補完した状態では、職業カード『村長』のボーナスを獲得できない。）",
             "136" : "136 柴屋根 増築や改築で、葦1か2を同数の木材に変えられる。 条件: 職業2",
             "138" : "138 葦の家 まだ登場していない家族コマをこのカードの上に置き、ゲーム終了時までここに住む。今のラウンドからアクションに使うことができ、食糧供給しなければならず、得点にならない。（後から「家族を増やす」のアクションで家に入れることができる） コスト: 木1・葦4",
             "139" : "139 寝室 他の人の家族が置いてあっても、家族を増やすアクションに家族を置いて実行できる。 コスト: 木1 条件: 小麦畑2",
@@ -280,7 +379,7 @@
             "151" : "151 建築士 家が5部屋以上になったら、ゲーム中に1度だけ好きなタイミングで無料で1部屋増築できる。",
             "153" : "153 托鉢僧 ゲーム終了時に、物乞いカードを2枚まで返すことができ、返したカード分のマイナス点が入らない。",
             "162" : "162 肉屋 暖炉を持っていれば家畜をいつでも以下の割合で食料にできる。羊；2　猪：3　牛：4　",
-            "171" : "171 港湾労働者 いつでも木材3をレンガ1葦1か石材1のいずれかに交換できる。または、レンガ2/葦2/石材2のいずれかを好きな資材1と交換できる。",
+            "171" : "171 港湾労働者 いつでも木材3をレンガ1か葦1か石材1のいずれかに交換できる。または、レンガ2/葦2/石材2のいずれかを好きな資材1と交換できる。",
             "172" : "172 族長 ゲーム終了時に石の家の1部屋につき1点追加ボーナス。このカードを出すには、追加で食料2が必要。",
             "173" : "173 族長の娘 他の人が「族長」を出したら、コスト無しでこのカードをすぐ出すことができる。ゲーム終了時に石の家なら3点、レンガの家なら1点を追加で得る。",
             "174" : "174 家庭教師 ゲーム終了時、このカードの後に出した職業1枚につき1点のボーナスを得る。",
