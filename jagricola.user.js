@@ -3,13 +3,11 @@
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/*
-// @version     1.1
+// @version     1.2
 // @require     http://code.jquery.com/jquery-1.8.2.js
 // @require     https://raw.github.com/cho45/jsdeferred/master/jsdeferred.userscript.js
 // @grant       hoge
 // ==/UserScript==
-
-// TODO: HISTORYを定期的に見てログ積み上げ、自分のターンが来たら通知
 
 (function() {
 
@@ -46,7 +44,7 @@
         $("#playminor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
         $("#playoccup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
         $("form[name=fmDraft]").before('<div id="active" />');
-        $("form[name=fmMiniForum]").after('<div id="history" />');
+        $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
     }
 
     function createCards() {
@@ -120,7 +118,8 @@
             $.get('partie.php', { id : agrid }, function(data) {
                 if (data.match(yourTurnMsg)) {
                     alert("It's your turn!");
-                    location.href = location.href;
+                    
+                    location.href = location.href.replace(/#$/, "");
                 }
             });
         }
@@ -136,13 +135,17 @@
             
             for (i = lastTurn; i < actions.length; i = i + 1) {
                 var act = actions[i];
-                $("#history").prepend("<p>round: " + act.round + ", player: " + act.player + ", action: " + act.action + "</p>");
+                addAction(act);
             }
             
             lastTurn = actions.length;
         }); 
         
         setTimeout(setAjaxHistory, ajaxmsec);
+    }
+    
+    function addAction(act) {
+        $("#history tbody").prepend("<tr><td style=\"text-align: center;\">" + act.round + "</td><td>" + act.player + "</td><td>" + act.action + "</td></tr>");
     }
     
     function getPlayers(data) {
