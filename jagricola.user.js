@@ -25,6 +25,9 @@
     var ajaxmsec = 10 * 1000;
     var yourTurnMsg = "Choose an action in the first tab on the left !";
     var reload = !($('.clInfo').html().match(yourTurnMsg));
+    var AUDIO_LIST = {
+        "bell": new Audio("http://heaven.gunjobiyori.com/up1157.wav")
+    };
     
     // main functions
     createCardSpace();
@@ -117,6 +120,7 @@
         if (reload) {
             $.get('partie.php', { id : agrid }, function(data) {
                 if (data.match(yourTurnMsg)) {
+                    AUDIO_LIST["bell"].play();
                     alert("It's your turn!");
                     
                     location.href = location.href.replace(/#$/, "");
