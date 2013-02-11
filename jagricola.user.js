@@ -24,8 +24,8 @@
     var lastTurn = 0;
     var ajaxmsec = 10 * 1000;
     var yourTurnMsg = "Choose an action in the first tab on the left !";
-    var yourFeedingMsg = "Last chance to make room for your new born animals, it will be too late during the breeding phase!":
-    var reload = !($('.clInfo').html().match(yourTurnMsg) || $('#dvGererAlimentationContent').html().match(yourFeedingMsg));
+    var yourFeedingMsg = "Last chance to make room for your new born animals, it will be too late during the breeding phase!";
+    var reload = !($('.clInfo').html().match(yourTurnMsg));
     var AUDIO_LIST = {
         "bell": new Audio("http://heaven.gunjobiyori.com/up1157.wav")
     };
