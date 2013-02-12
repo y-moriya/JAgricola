@@ -3,7 +3,7 @@
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/*
-// @version     1.2
+// @version     1.3
 // @require     http://code.jquery.com/jquery-1.8.2.js
 // @require     https://raw.github.com/cho45/jsdeferred/master/jsdeferred.userscript.js
 // @grant       hoge
@@ -18,25 +18,44 @@
         this.action = action;
     };
 
-    // global variable
-    var cardJson = initializeCardJson();
-    var agrid = getAgricolaId();
-    var lastTurn = 0;
+    // global variables
+    var cardJson, agrid, reload, drafting, draftWaiting, AUDIO_LIST, lastTurn;
+    
+    // constants
     var ajaxmsec = 10 * 1000;
     var yourTurnMsg = "Choose an action in the first tab on the left !";
     var yourFeedingMsg = "Last chance to make room for your new born animals, it will be too late during the breeding phase!";
-    var reload = !($('.clInfo').html().match(yourTurnMsg));
-    var AUDIO_LIST = {
-        "bell": new Audio("http://heaven.gunjobiyori.com/up1157.wav")
-    };
+    var draftMsg = "Choose the improvement and the occupation that you want to add to your hand and confirm.";
+    var draftWaitingMsg = "Round #0";
     
     // main functions
+    initialize();
     createCardSpace();
     createCards();
     createDraftCards();
-    createPlayCards();
-    hackShowExp();
-    setAjaxHistory();
+    
+    if (draftWaiting && !drafting) {
+        setAjaxDraft();
+    }
+
+    if (!(draftWaiting || drafting)) {
+        createPlayCards();
+        hackShowExp();
+        setAjaxHistory();
+    }
+    
+    // sub functions
+    function initialize() {
+        cardJson = initializeCardJson();
+        agrid = getAgricolaId();
+        reload = !(document.body.innerHTML.match(yourTurnMsg));
+        drafting = (document.body.innerHTML.match(draftMsg));
+        draftWaiting = (document.body.innerHTML.match(draftWaitingMsg));
+        lastTurn = 0;
+        AUDIO_LIST = {
+            "bell": new Audio("http://heaven.gunjobiyori.com/up1157.wav")
+        };
+    }
 
     function createCardSpace() {
         $("#conteneur").after('<div id="jagmsg" style="margin:5px; padding:5px;" />');
@@ -91,6 +110,9 @@
         var cardname = "";
         drafts.each(function(i) {
             $(drafts[i]).hover(function() {
+                if (this.title == "") {
+                    return;
+                }
                 $("#active").text(createCardDesc(this.title));
             });
         });
@@ -115,6 +137,19 @@
             createPlayCards();
         });
         $('#dvAttente').load('agrajax.php?id=' + agrid + '&j=' + piJ + '&a=attente');
+    }
+    
+    function setAjaxDraft() {
+        $.get('partie.php', { id : agrid }, function(data) {
+            if (data.match(draftMsg)) {
+                    AUDIO_LIST["bell"].play();
+                    alert("ピック！");
+                    
+                    location.href = location.href.replace(/#$/, "");
+            }
+        });
+        
+        setTimeout(setAjaxDraft, ajaxmsec);
     }
     
     function setAjaxHistory() {
