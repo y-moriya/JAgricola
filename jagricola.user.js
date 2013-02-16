@@ -48,7 +48,7 @@
     function initialize() {
         cardJson = initializeCardJson();
         agrid = getAgricolaId();
-        reload = !(document.body.innerHTML.match(yourTurnMsg));
+        reload = !(document.body.innerHTML.match(yourTurnMsg)　|| document.body.innerHTML.match(yourFeedingMsg));
         drafting = (document.body.innerHTML.match(draftMsg));
         draftWaiting = (document.body.innerHTML.match(draftWaitingMsg));
         lastTurn = 0;
