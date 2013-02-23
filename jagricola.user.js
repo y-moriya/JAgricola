@@ -145,7 +145,7 @@
     
     function setAjaxDraft() {
         $.get('partie.php', { id : agrid }, function(data) {
-            if (data.match(draftMsg)) {
+            if (data.match(draftMsg) || data.match(yourTurnMsg)) {
                     AUDIO_LIST["bell"].play();
                     alert("ピック！");
                     
