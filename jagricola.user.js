@@ -2,10 +2,9 @@
 // @name        JAgricola
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
-// @include     http://www.boiteajeux.net/jeux/agr/*
-// @version     1.3
+// @include     http://www.boiteajeux.net/jeux/agr/partie.php*
+// @version     1.5
 // @require     http://code.jquery.com/jquery-1.8.2.js
-// @require     https://raw.github.com/cho45/jsdeferred/master/jsdeferred.userscript.js
 // @grant       hoge
 // ==/UserScript==
 
@@ -19,7 +18,7 @@
     };
 
     // global variables
-    var cardJson, agrid, reload, drafting, draftWaiting, AUDIO_LIST, lastTurn;
+    var cardJson, agrid, reload, drafting, draftWaiting, AUDIO_LIST, lastTurn, autoEnd;
     
     // constants
     var ajaxmsec = 10 * 1000;
@@ -46,6 +45,11 @@
     
     // sub functions
     function initialize() {
+        autoEnd = GM_getValue('AUTO_END', "false");
+        if (autoEnd && document.body.innerHTML.match("Validate your turn?")) {
+            $($(".clInfo input")[0]).trigger("onclick");
+        }
+        
         cardJson = initializeCardJson();
         agrid = getAgricolaId();
         reload = !(document.body.innerHTML.match(yourTurnMsg)　|| document.body.innerHTML.match(yourFeedingMsg));
@@ -66,11 +70,25 @@
         $("#occup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
         $("#playminor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
         $("#playoccup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
+        
         $("form[name=fmDraft]").before('<div id="active" />');
         if ($("form[name=fmMiniForum]").length == 0) {
             $("img[src*=cartesenjeu]").parent().next().append('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
         } else {
             $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
+        }
+        
+        $(".clTexteFort tbody").append('<tr><td style="text-align:center;padding-bottom:10px" id="autoEnd"></td></tr>');
+        if (autoEnd) {
+            $("#autoEnd").append('<a href="#">[自動END ON]</a>').click(function() {
+                GM_setValue("AUTO_END", false);
+                location.href = location.href.replace(/#$/, "");
+            });
+        } else {
+            $("#autoEnd").append('<a href="#">[自動END OFF]</a>').click(function() {
+                GM_setValue("AUTO_END", true);
+                location.href = location.href.replace(/#$/, "");
+            });
         }
     }
 
@@ -252,6 +270,22 @@
     function getCardNumber(cardname) {
         return cardname.match(/^\d+/);
     }
+    
+    function GM_getValue(key , defaultValue)
+    {
+      var value = window.localStorage.getItem(key);
+      if (value != null) {
+        return eval(value);
+      } else {
+        return defaultValue || null;
+      }
+    }
+    
+    function GM_setValue(key , value)
+    {
+      window.localStorage.setItem(key , value);
+    }
+
 
     /*
      * 一旦コメントアウト。いらなそー。
