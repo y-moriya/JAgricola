@@ -67,7 +67,11 @@
         $("#playminor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
         $("#playoccup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
         $("form[name=fmDraft]").before('<div id="active" />');
-        $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
+        if ($("form[name=fmMiniForum]").length == 0) {
+            $("img[src*=cartesenjeu]").parent().next().append('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
+        } else {
+            $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
+        }
     }
 
     function createCards() {
