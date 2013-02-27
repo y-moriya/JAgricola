@@ -73,18 +73,6 @@
             $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
         }
         
-        $(".clTexteFort tbody").append('<tr><td style="text-align:center;padding-bottom:10px" id="autoEnd"></td></tr>');
-        if (autoEnd) {
-            $("#autoEnd").append('<a href="#">[自動END ON]</a>').click(function() {
-                GM_setValue("AUTO_END", false);
-                location.href = location.href.replace(/#$/, "");
-            });
-        } else {
-            $("#autoEnd").append('<a href="#">[自動END OFF]</a>').click(function() {
-                GM_setValue("AUTO_END", true);
-                location.href = location.href.replace(/#$/, "");
-            });
-        }
     }
 
     function createCards() {
