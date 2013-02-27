@@ -3,7 +3,7 @@
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     1.5
+// @version     1.5.1
 // @require     http://code.jquery.com/jquery-1.8.2.js
 // @grant       hoge
 // ==/UserScript==
@@ -18,7 +18,7 @@
     };
 
     // global variables
-    var cardJson, agrid, reload, drafting, draftWaiting, AUDIO_LIST, lastTurn, autoEnd;
+    var cardJson, agrid, reload, drafting, draftWaiting, AUDIO_LIST, lastTurn;
     
     // constants
     var ajaxmsec = 10 * 1000;
@@ -45,11 +45,6 @@
     
     // sub functions
     function initialize() {
-        autoEnd = GM_getValue('AUTO_END', "false");
-        if (autoEnd && document.body.innerHTML.match("Validate your turn?")) {
-            $($(".clInfo input")[0]).trigger("onclick");
-        }
-        
         cardJson = initializeCardJson();
         agrid = getAgricolaId();
         reload = !(document.body.innerHTML.match(yourTurnMsg)　|| document.body.innerHTML.match(yourFeedingMsg));
