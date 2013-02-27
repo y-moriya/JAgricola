@@ -3,7 +3,7 @@
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     1.5.1
+// @version     1.5.2
 // @require     http://code.jquery.com/jquery-1.8.2.js
 // @grant       hoge
 // ==/UserScript==
