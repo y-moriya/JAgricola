@@ -3,7 +3,7 @@
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     1.5.2
+// @version     1.5.3
 // @require     http://code.jquery.com/jquery-1.8.2.js
 // @grant       hoge
 // ==/UserScript==
@@ -24,6 +24,7 @@
     var ajaxmsec = 10 * 1000;
     var yourTurnMsg = "Choose an action in the first tab on the left !";
     var yourFeedingMsg = "Last chance to make room for your new born animals, it will be too late during the breeding phase!";
+    var yourOccupationMsg = "dvSavoirFaire55a";
     var draftMsg = "Choose the improvement and the occupation that you want to add to your hand and confirm.";
     var draftWaitingMsg = "Round #0";
     
@@ -160,7 +161,7 @@
     function setAjaxHistory() {
         if (reload) {
             $.get('partie.php', { id : agrid }, function(data) {
-                if (data.match(yourTurnMsg) || data.match(yourFeedingMsg)) {
+                if (data.match(yourTurnMsg) || data.match(yourFeedingMsg) || data.match(yourOccupationMsg)) {
                     AUDIO_LIST["bell"].play();
                     alert("It's your turn!");
                     
