@@ -3,7 +3,7 @@
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     2.0.0
+// @version     2.0.1
 // @require     http://code.jquery.com/jquery-1.8.2.js
 // @grant       hoge
 // ==/UserScript==
@@ -140,20 +140,17 @@
     }
     
     function setAlert() {
-     	if (GM_getValue("alerted", false)) {
-     		GM_setValue("alerted", false);
-     		return;
-     	}
-     
         $.get('index.php', { p : "encours" }, function(data) {
         	parseIndex(data);
-            if (GM_getValue(agrid)) {
+            if (GM_getValue(agrid, false) && !GM_getValue("alerted", false)) {
                 AUDIO_LIST["bell"].play();
                 alert("It's your turn!");
                 GM_setValue("alerted", true);
                 
                 location.href = location.href.replace(/#$/, "");
-            }
+             } else if (!GM_getValue(agrid, false)) {
+				GM_setValue("alerted", false);
+             }
             
         });
         
