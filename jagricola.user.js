@@ -3,7 +3,7 @@
 // @namespace   JAgricola
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     1.5.3
+// @version     2.0.0
 // @require     http://code.jquery.com/jquery-1.8.2.js
 // @grant       hoge
 // ==/UserScript==
@@ -18,13 +18,10 @@
     };
 
     // global variables
-    var cardJson, agrid, reload, drafting, draftWaiting, AUDIO_LIST, lastTurn;
+    var cardJson, agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, yourTurnGames;
     
     // constants
     var ajaxmsec = 10 * 1000;
-    var yourTurnMsg = "Choose an action in the first tab on the left !";
-    var yourFeedingMsg = "Last chance to make room for your new born animals, it will be too late during the breeding phase!";
-    var yourOccupationMsg = "dvSavoirFaire55a";
     var draftMsg = "Choose the improvement and the occupation that you want to add to your hand and confirm.";
     var draftWaitingMsg = "Round #0";
     
@@ -34,10 +31,7 @@
     createCards();
     createDraftCards();
     
-    if (draftWaiting && !drafting) {
-        setAjaxDraft();
-    }
-
+    setAlert();
     if (!(draftWaiting || drafting)) {
         createPlayCards();
         hackShowExp();
@@ -48,10 +42,10 @@
     function initialize() {
         cardJson = initializeCardJson();
         agrid = getAgricolaId();
-        reload = !(document.body.innerHTML.match(yourTurnMsg)　|| document.body.innerHTML.match(yourFeedingMsg));
         drafting = (document.body.innerHTML.match(draftMsg));
         draftWaiting = (document.body.innerHTML.match(draftWaitingMsg));
         lastTurn = 0;
+        yourTurnGames = 0;
         AUDIO_LIST = {
             "bell": new Audio("http://heaven.gunjobiyori.com/up1157.wav")
         };
@@ -145,31 +139,47 @@
         $('#dvAttente').load('agrajax.php?id=' + agrid + '&j=' + piJ + '&a=attente');
     }
     
-    function setAjaxDraft() {
-        $.get('partie.php', { id : agrid }, function(data) {
-            if (data.match(draftMsg) || data.match(yourTurnMsg)) {
-                    AUDIO_LIST["bell"].play();
-                    alert("ピック！");
-                    
-                    location.href = location.href.replace(/#$/, "");
+    function setAlert() {
+     	if (GM_getValue("alerted", false)) {
+     		GM_setValue("alerted", false);
+     		return;
+     	}
+     
+        $.get('index.php', { p : "encours" }, function(data) {
+        	parseIndex(data);
+            if (GM_getValue(agrid)) {
+                AUDIO_LIST["bell"].play();
+                alert("It's your turn!");
+                GM_setValue("alerted", true);
+                
+                location.href = location.href.replace(/#$/, "");
             }
+            
         });
         
-        setTimeout(setAjaxDraft, ajaxmsec);
+        setTimeout(setAlert, ajaxmsec);
+    }
+    
+    function parseIndex(data) {
+    	var rows = $($(data).find(".clLigne1, .clLigne2"));
+	    for (i = 0; i < rows.length; i += 1) {
+	    	var row = rows[i].innerHTML;
+	    	if (row.match(/jeux\/agr\/partie\.php\?id=([0-9]+)/)) {
+	    		var rowid = RegExp.$1;
+	    		var rowvalue = false;
+	    		if (row.match("font-weight:bold; color:red; font-size:10pt;")) {
+	    			rowvalue = true;
+	    		}
+	    		
+	    		GM_setValue(rowid, rowvalue);
+	    		if (rowvalue) {
+	    			yourTurnGames += 1;
+	    		}
+	    	}
+    	}
     }
     
     function setAjaxHistory() {
-        if (reload) {
-            $.get('partie.php', { id : agrid }, function(data) {
-                if (data.match(yourTurnMsg) || data.match(yourFeedingMsg) || data.match(yourOccupationMsg)) {
-                    AUDIO_LIST["bell"].play();
-                    alert("It's your turn!");
-                    
-                    location.href = location.href.replace(/#$/, "");
-                }
-            });
-        }
-    
         $.get('historique.php', { id : agrid }, function(data) {
             
             var players = getPlayers(data);
@@ -255,7 +265,7 @@
         return cardname.match(/^\d+/);
     }
     
-    function GM_getValue(key , defaultValue)
+    function GM_getValue(key, defaultValue)
     {
       var value = window.localStorage.getItem(key);
       if (value != null) {
@@ -265,29 +275,10 @@
       }
     }
     
-    function GM_setValue(key , value)
+    function GM_setValue(key, value)
     {
       window.localStorage.setItem(key , value);
     }
-
-
-    /*
-     * 一旦コメントアウト。いらなそー。
-     translateMessages();
-     function translateMessages() {
-     document.body.innerHTML = document.body.innerHTML
-     .replace("Choose an action in the first tab on the left !", "左の一番上のタブからアクションを選んでね。")
-     .replace("In the second tab you can generate Food if you have some facilities to do it.", "かまどがあれば、二番目のタブでいつでも家畜を食料に変えられるよ")
-     .replace("House building and/or stables building", "増築 and/or 厩")
-     .replace("Starting player and/or Minor Improvement", "スタプレ and/or 小進歩")
-     .replace("Sow<br>and/or<br>Baking bread", "種を蒔く and/or パンを焼く")
-     .replace("Ploughing", "畑")
-     .replace("Grain", "小麦")
-     .replace("Occupation", "職業")
-     .replace("Day labourer", "日雇い")
-     .replace("Wood", "木");
-     }
-     */
 
     function initializeCardJson() {
         var json = {
