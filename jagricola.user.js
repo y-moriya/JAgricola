@@ -18,7 +18,7 @@
     };
 
     // global variables
-    var cardJson, agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, yourTurnGames;
+    var cardJson, agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, yourTurnGames, alerted;
     
     // constants
     var ajaxmsec = 10 * 1000;
@@ -42,6 +42,7 @@
     function initialize() {
         cardJson = initializeCardJson();
         agrid = getAgricolaId();
+        alerted = agrid + "_alerted";
         drafting = (document.body.innerHTML.match(draftMsg));
         draftWaiting = (document.body.innerHTML.match(draftWaitingMsg));
         lastTurn = 0;
@@ -142,14 +143,14 @@
     function setAlert() {
         $.get('index.php', { p : "encours" }, function(data) {
         	parseIndex(data);
-            if (GM_getValue(agrid, false) && !GM_getValue("alerted", false)) {
+            if (GM_getValue(agrid, false) && !GM_getValue(alerted, false)) {
                 AUDIO_LIST["bell"].play();
                 alert("It's your turn!");
-                GM_setValue("alerted", true);
+                GM_setValue(alerted, true);
                 
                 location.href = location.href.replace(/#$/, "");
              } else if (!GM_getValue(agrid, false)) {
-				GM_setValue("alerted", false);
+				GM_setValue(alerted, false);
              }
             
         });
