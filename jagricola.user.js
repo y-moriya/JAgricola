@@ -120,24 +120,9 @@
     }
 
     function hackShowExp() {
-        $('a[href*="showExp"]').each(function() {
-            var target = this.href.match(/showExp\((\d+)\)/);
-            target = RegExp.$1;
-            this.href = "#";
-            $(this).click(function() {
-                showExpPlus(target);
-            });
-        });
-    }
-
-    function showExpPlus(piJ) {
-        $('#dvExploitation').load('agrajax.php?id=' + agrid + '&j=' + piJ + '&a=exploitation');
-        $.get('agrajax.php', { id : agrid, j : piJ.toString(), a : "cartes" }, function(data) {
-            var newHtml = $(data);
-            $('#dvCartesPosees').html(newHtml);
+        new window.MutationObserver(function(mutations, observer) {
             createPlayCards();
-        });
-        $('#dvAttente').load('agrajax.php?id=' + agrid + '&j=' + piJ + '&a=attente');
+        }).observe($('#dvCartesPosees')[0], { childList: true });
     }
     
     function setAlert() {
