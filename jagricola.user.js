@@ -127,7 +127,7 @@
     
     function setAlert() {
         $.get('index.php', { p : "encours" }, function(data) {
-        	parseIndex(data);
+            parseIndex(data);
             if (GM_getValue(agrid, false) && !GM_getValue(alerted, false)) {
                 AUDIO_LIST["bell"].play();
                 alert("It's your turn!");
@@ -135,7 +135,7 @@
                 
                 location.href = location.href.replace(/#$/, "");
              } else if (!GM_getValue(agrid, false)) {
-				GM_setValue(alerted, false);
+                GM_setValue(alerted, false);
              }
             
         });
@@ -144,22 +144,22 @@
     }
     
     function parseIndex(data) {
-    	var rows = $($(data).find(".clLigne1, .clLigne2"));
-	    for (i = 0; i < rows.length; i += 1) {
-	    	var row = rows[i].innerHTML;
-	    	if (row.match(/jeux\/agr\/partie\.php\?id=([0-9]+)/)) {
-	    		var rowid = RegExp.$1;
-	    		var rowvalue = false;
-	    		if (row.match("font-weight:bold; color:red; font-size:10pt;")) {
-	    			rowvalue = true;
-	    		}
-	    		
-	    		GM_setValue(rowid, rowvalue);
-	    		if (rowvalue) {
-	    			yourTurnGames += 1;
-	    		}
-	    	}
-    	}
+        var rows = $($(data).find(".clLigne1, .clLigne2"));
+        for (i = 0; i < rows.length; i += 1) {
+            var row = rows[i].innerHTML;
+            if (row.match(/jeux\/agr\/partie\.php\?id=([0-9]+)/)) {
+                var rowid = RegExp.$1;
+                var rowvalue = false;
+                if (row.match("font-weight:bold; color:red; font-size:10pt;")) {
+                    rowvalue = true;
+                }
+                
+                GM_setValue(rowid, rowvalue);
+                if (rowvalue) {
+                    yourTurnGames += 1;
+                }
+            }
+        }
     }
     
     function setAjaxHistory() {
@@ -588,4 +588,4 @@
         return json;
     }
 
-})(); 
+})();
