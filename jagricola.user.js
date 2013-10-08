@@ -35,6 +35,9 @@
     setAlert();
     if (!(draftWaiting || drafting)) {
         createPlayCards();
+        setCardTooltip($('#dvCartesPosees td.clCarteMf'));
+        setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 345 });
+        setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 345 });
         hackShowExp();
         setAjaxHistory();
     }
@@ -395,6 +398,31 @@
 ');
     }
 
+    function setCardTooltip($targets, cluetip_options) {
+        cluetip_options = $.extend({
+            multiple: true,
+            cluetipClass: 'agricola',
+            clickThrough: true,
+            cluezIndex: 3000,
+            waitImage: false,
+            local: true,
+            attribute: 'data-jp-text',
+            titleAttribute: 'data-jp-title',
+            width: 220,
+            leftOffset: 220 + 120 + 5,
+            cursor: 'pointer',
+            showTitle: true
+        }, cluetip_options || {});
+
+        $targets.each(function () {
+            var selector = '#ja-text-' + getCardNumber($(this).attr('title'))[0];
+            if ($(selector).is('*')) {
+                $(this).attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
+                    .cluetip(cluetip_options);
+            }
+        });
+    }
+
     function createCards() {
         $("#played").empty();
 
@@ -414,30 +442,7 @@
         });
     }
 
-    function createPlayCards(cluetip_options) {
-        cluetip_options = $.extend({
-            multiple: true,
-            cluetipClass: 'agricola',
-            clickThrough: true,
-            cluezIndex: 3000,
-            waitImage: false,
-            local: true,
-            attribute: 'data-jp-text',
-            titleAttribute: 'data-jp-title',
-            width: 220,
-            leftOffset: 220 + 120 + 5,
-            cursor: 'pointer',
-            showTitle: true
-        }, cluetip_options || {});
-
-        $('#tabCartesPosees td.clCarteMf').each(function () {
-            var selector = '#ja-text-' + getCardNumber($(this).attr('title'))[0];
-            if ($(selector).is('*')) {
-                $(this).attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
-                    .cluetip(cluetip_options);
-            }
-        });
-
+    function createPlayCards() {
         $("#played").empty();
         var plays = $("#tabCartesPosees td");
         var cardname = "";
@@ -468,10 +473,7 @@
 
     function hackShowExp() {
         new window.MutationObserver(function(mutations, observer) {
-            createPlayCards({
-                width: 220,
-                leftOffset: 170,
-            });
+            setCardTooltip($('#dvCartesPosees td.clCarteMf'), { leftOffset: 170 });
         }).observe($('#dvCartesPosees')[0], { childList: true });
     }
     
