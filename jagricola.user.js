@@ -20,18 +20,18 @@
 
     // global variables
     var cardJson, agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, yourTurnGames, alerted;
-    
+
     // constants
     var ajaxmsec = 10 * 1000;
     var draftMsg = "Choose the improvement and the occupation that you want to add to your hand and confirm.";
     var draftWaitingMsg = "Round #0";
-    
+
     // main functions
     initialize();
     createCardSpace();
     createCards();
     createDraftCards();
-    
+
     setAlert();
     if (!(draftWaiting || drafting)) {
         createPlayCards();
@@ -41,7 +41,7 @@
         hackShowExp();
         setAjaxHistory();
     }
-    
+
     // sub functions
     function initialize() {
         cardJson = initializeCardJson();
@@ -65,7 +65,7 @@
         $("#occup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
         $("#playminor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
         $("#playoccup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
-        
+
         $("form[name=fmDraft]").before('<div id="active" />');
         if ($("form[name=fmMiniForum]").length == 0) {
             $("img[src*=cartesenjeu]").parent().next().append('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
@@ -476,7 +476,7 @@
             setCardTooltip($('#dvCartesPosees td.clCarteMf'), { leftOffset: 170 });
         }).observe($('#dvCartesPosees')[0], { childList: true });
     }
-    
+
     function setAlert() {
         $.get('index.php', { p : "encours" }, function(data) {
             parseIndex(data);
@@ -484,17 +484,17 @@
                 AUDIO_LIST["bell"].play();
                 alert("It's your turn!");
                 GM_setValue(alerted, true);
-                
+
                 location.href = location.href.replace(/#$/, "");
              } else if (!GM_getValue(agrid, false)) {
                 GM_setValue(alerted, false);
              }
-            
+
         });
-        
+
         setTimeout(setAlert, ajaxmsec);
     }
-    
+
     function parseIndex(data) {
         var rows = $($(data).find(".clLigne1, .clLigne2"));
         for (i = 0; i < rows.length; i += 1) {
@@ -505,7 +505,7 @@
                 if (row.match("font-weight:bold; color:red; font-size:10pt;")) {
                     rowvalue = true;
                 }
-                
+
                 GM_setValue(rowid, rowvalue);
                 if (rowvalue) {
                     yourTurnGames += 1;
@@ -513,32 +513,32 @@
             }
         }
     }
-    
+
     function setAjaxHistory() {
         $.get('historique.php', { id : agrid }, function(data) {
-            
+
             var players = getPlayers(data);
             var actions = getActions(data, players);
-            
+
             if (lastTurn == 0 && actions.length >= 5) {
                 lastTurn = actions.length - 5;
             }
-            
+
             for (i = lastTurn; i < actions.length; i = i + 1) {
                 var act = actions[i];
                 addAction(act);
             }
-            
+
             lastTurn = actions.length;
-        }); 
-        
+        });
+
         setTimeout(setAjaxHistory, ajaxmsec);
     }
-    
+
     function addAction(act) {
         $("#history tbody").prepend("<tr><td style=\"text-align: center;\">" + act.round + "</td><td>" + act.player + "</td><td>" + act.action + "</td></tr>");
     }
-    
+
     function getPlayers(data) {
         var headers = data.match(/<th .+?<\/th>/g);
         var players = [];
@@ -550,7 +550,7 @@
                 players[i-1] = RegExp.$1;
             }
         }
-        
+
         return players;
     }
 
@@ -565,30 +565,30 @@
         for (i = 0; i < rows.length; i = i + 1) {
             var datas = rows[i].match(/<td .+?<\/td>/g);
             for (j = 0; j < datas.length; j = j + 1) {
-                
+
                 if (datas.length != players.length && j == 0) {
                     round = round + 1;
                     continue;
                 }
-                
+
                 if (datas[j].match("&nbsp;")) {
                     continue;
                 }
-                
+
                 player = j;
                 if (datas.length != players.length) {
                     player = j - 1;
                 }
-                
+
                 if (datas[j].match(/>(\d+)<\/div>(.+)<\/td>/)) {
                     n = RegExp.$1;
                     act = RegExp.$2;
-                    
+
                     actions[Number(n) - 1] = new Action(round, players[player], act);
                 }
             }
         }
-        
+
         return actions;
     }
 
@@ -599,7 +599,7 @@
     function getCardNumber(cardname) {
         return cardname.match(/^\d+/);
     }
-    
+
     function GM_getValue(key, defaultValue)
     {
       var value = window.localStorage.getItem(key);
@@ -609,7 +609,7 @@
         return defaultValue || null;
       }
     }
-    
+
     function GM_setValue(key, value)
     {
       window.localStorage.setItem(key , value);
