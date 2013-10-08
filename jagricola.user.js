@@ -5,7 +5,7 @@
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
 // @version     2.0.2
 // @require     http://code.jquery.com/jquery-1.8.2.js
-// @require     http://www.boiteajeux.net/includes/cluetip/jquery.cluetip.min.js
+// @require     https://raw.github.com/kswedberg/jquery-cluetip/master/jquery.cluetip.min.js
 // @grant       hoge
 // ==/UserScript==
 
@@ -69,18 +69,18 @@
         } else {
             $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
         }
-        $('#jagmsg').append('<div id="ja-texts"></div>');
+        $('#jagmsg').append('<div id="ja-texts" style="display:none"></div>');
         $('#ja-texts').append("\
-<div id=\"ja-text-1\"><p style=\"font-style:italic\">Cost : 2x<img align=\"absmiddle\" src=\"img/pionArgile16.png\"></p>以下の品をいつでも食料にできる。<br>　野菜：2<br>　羊：2<br>　猪：2<br>　牛：3<br>「パンを焼く」のアクションで、小麦：2</div>\n\
+<div id=\"ja-text-1\" title=\"1. かまど\"><p style=\"font-style:italic\">Cost : 2x<img align=\"absmiddle\" src=\"img/pionArgile16.png\"></p>以下の品をいつでも食料にできる。<br>　野菜：2<br>　羊：2<br>　猪：2<br>　牛：3<br>「パンを焼く」のアクションで、小麦：2</div>\n\
 \n\
-<div id=\"ja-text-2\"><p style=\"font-style:italic\">Cost : 3x<img align=\"absmiddle\" src=\"img/pionArgile16.png\"></p>以下の品をいつでも食料にできる。<br>　野菜：2<br>　羊：2<br>　猪：2<br>　牛：3<br>「パンを焼く」のアクションで、小麦：2</div>\n\
+<div id=\"ja-text-2\" title=\"2. かまど\"><p style=\"font-style:italic\">Cost : 3x<img align=\"absmiddle\" src=\"img/pionArgile16.png\"></p>以下の品をいつでも食料にできる。<br>　野菜：2<br>　羊：2<br>　猪：2<br>　牛：3<br>「パンを焼く」のアクションで、小麦：2</div>\n\
 \n\
-<div id=\"ja-text-3\"><p style=\"font-style:italic\">Cost : 4x<img align=\"absmiddle\" src=\"img/pionArgile16.png\"> or discard 1 Fireplace</p>以下の品をいつでも食料にできる。<br>　野菜：3<br>　羊：2<br>　猪：3<br>　牛：4<br>「パンを焼く」のアクションで、小麦：3</div>\n\
+<div id=\"ja-text-3\" title=\"3. 調理場\"><p style=\"font-style:italic\">Cost : 4x<img align=\"absmiddle\" src=\"img/pionArgile16.png\"> or discard 1 Fireplace</p>以下の品をいつでも食料にできる。<br>　野菜：3<br>　羊：2<br>　猪：3<br>　牛：4<br>「パンを焼く」のアクションで、小麦：3</div>\n\
 \n\
-<div id=\"ja-text-4\"><p style=\"font-style:italic\">Cost : 5x<img align=\"absmiddle\" src=\"img/pionArgile16.png\"> or discard 1 Fireplace</p>以下の品をいつでも食料にできる。<br>　野菜：3<br>　羊：2<br>　猪：3<br>　牛：4<br>「パンを焼く」のアクションで、小麦：3</div>\n\
+<div id=\"ja-text-4\" title=\"4. 調理場\"><p style=\"font-style:italic\">Cost : 5x<img align=\"absmiddle\" src=\"img/pionArgile16.png\"> or discard 1 Fireplace</p>以下の品をいつでも食料にできる。<br>　野菜：3<br>　羊：2<br>　猪：3<br>　牛：4<br>「パンを焼く」のアクションで、小麦：3</div>\n\
 \n\
-<div id=\"ja-text-5\"><p style=\"font-style:italic\">Cost : 3x<img align=\"absmiddle\" src=\"img/pionArgile16.png\">1x<img align=\"absmiddle\" src=\"img/pionPierre16.png\"></p>「パンを焼く」のアクションのたびに、小麦最大1を食料5にできる。<br>このカードの獲得のとき、追加アクションで「パンを焼く」ができる。</div>\n\
-").hide();
+<div id=\"ja-text-5\" title=\"5. レンガ暖炉\"><p style=\"font-style:italic\">Cost : 3x<img align=\"absmiddle\" src=\"img/pionArgile16.png\">1x<img align=\"absmiddle\" src=\"img/pionPierre16.png\"></p>「パンを焼く」のアクションのたびに、小麦最大1を食料5にできる。<br>このカードの獲得のとき、追加アクションで「パンを焼く」ができる。</div>\n\
+");
     }
 
     function createCards() {
@@ -103,10 +103,7 @@
     }
 
     function createPlayCards(cluetip_options) {
-        cluetip_options = cluetip_options || {};
-        $('#tabCartesPosees td.clCarteMf').attr('data-jp-text', function () {
-            return '#ja-text-' + getCardNumber($(this).attr('title'))[0];
-        }).cluetip($.extend({}, {
+        cluetip_options = $.extend({
             multiple: true,
             cluetipClass: 'agricola',
             clickThrough: true,
@@ -114,11 +111,20 @@
             waitImage: false,
             local: true,
             attribute: 'data-jp-text',
+            titleAttribute: 'data-jp-title',
             width: 220,
             leftOffset: 220 + 120 + 5,
             cursor: 'pointer',
             showTitle: true
-        }, cluetip_options));
+        }, cluetip_options || {});
+
+        $('#tabCartesPosees td.clCarteMf').each(function () {
+            var selector = '#ja-text-' + getCardNumber($(this).attr('title'))[0];
+            if ($(selector).is('*')) {
+                $(this).attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
+                    .cluetip(cluetip_options);
+            }
+        });
 
         $("#played").empty();
         var plays = $("#tabCartesPosees td");
