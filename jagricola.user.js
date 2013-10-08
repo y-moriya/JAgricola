@@ -29,12 +29,10 @@
     // main functions
     initialize();
     createCardSpace();
-    createCards();
     createDraftCards();
 
     setAlert();
     if (!(draftWaiting || drafting)) {
-        createPlayCards();
         setCardTooltip($('#dvCartesPosees td.clCarteMf'));
         setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 345 });
         setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 345 });
@@ -57,22 +55,14 @@
     }
 
     function createCardSpace() {
-        $("#conteneur").after('<div id="jagmsg" style="margin:5px; padding:5px;" />');
-        $("#jagmsg").append('<div id="plays"><h3>プレイカード</h3></div>').append('<div id="hands"><h3>手札</h3></div>');
-        $("#plays").append('<dl id="played"><dt></dt></dl>');
-        $("#hands").append('<dl id="minor" />').append('<dl id="occup" />');
-        $("#minor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
-        $("#occup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
-        $("#playminor").append('<dt style="color:#314D31;font-weight:bold;">小進歩</dt>');
-        $("#playoccup").append('<dt style="color:#314D31;font-weight:bold;">職業</dt>');
-
         $("form[name=fmDraft]").before('<div id="active" />');
         if ($("form[name=fmMiniForum]").length == 0) {
             $("img[src*=cartesenjeu]").parent().next().append('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
         } else {
             $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
         }
-        $('#jagmsg').append('<div id="ja-texts" style="display:none"></div>');
+
+        $('#conteneur').after('<div id="ja-texts" style="display:none"></div>');
         $('#ja-texts').append('\
 <div id="ja-text-1" title="1. かまど"><p style="font-style:italic">Cost : 2x<img align="absmiddle" src="img/pionArgile16.png"></p>以下の品をいつでも食料にできる。<br>　野菜：2<br>　羊：2<br>　猪：2<br>　牛：3<br>「パンを焼く」のアクションで\
 、小麦：2</div>\
@@ -420,36 +410,6 @@
                 $(this).attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
                     .cluetip(cluetip_options);
             }
-        });
-    }
-
-    function createCards() {
-        $("#played").empty();
-
-        var minors = $('.tableauAmelioration table:eq(0) td');
-        var cardname = "";
-        minors.each(function(i) {
-            cardname = minors[i].title;
-
-            $("#minor").append("<dd>" + createCardDesc(cardname) + "</dd>");
-        });
-
-        var occups = $('.tableauAmelioration table:eq(1) td');
-        occups.each(function(i) {
-            cardname = occups[i].title;
-
-            $("#occup").append("<dd>" + createCardDesc(cardname) + "</dd>");
-        });
-    }
-
-    function createPlayCards() {
-        $("#played").empty();
-        var plays = $("#tabCartesPosees td");
-        var cardname = "";
-        plays.each(function(i) {
-            cardname = plays[i].title;
-
-            $("#played").append("<dd>" + createCardDesc(cardname) + "</dd>");
         });
     }
 
