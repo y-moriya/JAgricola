@@ -478,8 +478,9 @@
 
     function parseIndex(data) {
         $($(data).find(".clLigne1, .clLigne2")).each(function () {
-            var gameid = $(this).find('a:first').text();
-            var myturn = $(this).find('[style*="color"][style*="red"]').is('*');
+            var $self = $(this);
+            var gameid = $self.find('a:first').text();
+            var myturn = $self.find('[style*="color"][style*="red"]').is('*');
             GM_setValue(gameid, myturn);
         });
     }
