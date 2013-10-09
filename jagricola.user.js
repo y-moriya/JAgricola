@@ -19,7 +19,7 @@
     };
 
     // global variables
-    var cardJson, agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, yourTurnGames, alerted;
+    var cardJson, agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, alerted;
 
     // constants
     var ajaxmsec = 10 * 1000;
@@ -48,7 +48,6 @@
         drafting = (document.body.innerHTML.match(draftMsg));
         draftWaiting = (document.body.innerHTML.match(draftWaitingMsg));
         lastTurn = 0;
-        yourTurnGames = 0;
         AUDIO_LIST = {
             "bell": new Audio("http://heaven.gunjobiyori.com/up1157.wav")
         };
@@ -478,22 +477,11 @@
     }
 
     function parseIndex(data) {
-        var rows = $($(data).find(".clLigne1, .clLigne2"));
-        for (i = 0; i < rows.length; i += 1) {
-            var row = rows[i].innerHTML;
-            if (row.match(/jeux\/agr\/partie\.php\?id=([0-9]+)/)) {
-                var rowid = RegExp.$1;
-                var rowvalue = false;
-                if (row.match("font-weight:bold; color:red; font-size:10pt;")) {
-                    rowvalue = true;
-                }
-
-                GM_setValue(rowid, rowvalue);
-                if (rowvalue) {
-                    yourTurnGames += 1;
-                }
-            }
-        }
+        $($(data).find(".clLigne1, .clLigne2")).each(function () {
+            var gameid = $(this).find('a:first').text();
+            var myturn = $(this).find('[style*="color"][style*="red"]').is('*');
+            GM_setValue(gameid, myturn);
+        });
     }
 
     function setAjaxHistory() {
