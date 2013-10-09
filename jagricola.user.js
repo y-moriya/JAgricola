@@ -36,7 +36,7 @@
         setCardTooltip($('#dvCartesPosees td.clCarteMf'));
         setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 345 });
         setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 345 });
-        hackShowExp();
+        hookShowExp();
         setAjaxHistory();
     }
 
@@ -453,7 +453,7 @@
         });
     }
 
-    function hackShowExp() {
+    function hookShowExp() {
         new window.MutationObserver(function(mutations, observer) {
             setCardTooltip($('#dvCartesPosees td.clCarteMf'), { leftOffset: 170 });
         }).observe($('#dvCartesPosees')[0], { childList: true });
