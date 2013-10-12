@@ -121,8 +121,8 @@
 
     function setAjaxHistory() {
         $.get('historique.php', { id : agrid }, function(data) {
-
-            var players = getPlayers(data);
+            var $self = $(data);
+            var players = $self.find('th').has('div').map(function () { return $(this).text().trim(); }).toArray();
             var actions = getActions(data, players);
 
             if (lastTurn == 0 && actions.length >= 5) {
@@ -142,21 +142,6 @@
 
     function addAction(act) {
         $("#history tbody").prepend("<tr><td style=\"text-align: center;\">" + act.round + "</td><td>" + act.player + "</td><td>" + act.action + "</td></tr>");
-    }
-
-    function getPlayers(data) {
-        var headers = data.match(/<th .+?<\/th>/g);
-        var players = [];
-        for (i = 0; i < headers.length; i = i + 1) {
-            if (i == 0) {
-                continue;
-            }
-            if (headers[i].match(/div>&nbsp;(.+)<div/)) {
-                players[i-1] = RegExp.$1;
-            }
-        }
-
-        return players;
     }
 
     function getActions(data, players) {
