@@ -10,27 +10,26 @@
 // ==/UserScript==
 
 (function (jaTextHtml) {
-
-    // class
+    // Class
     var Action = function(round, player, action) {
         this.round = round;
         this.player = player;
         this.action = action;
     };
 
-    // global variables
-    var agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, alerted;
-
-    // constants
+    // Constants
     var ajaxmsec = 10 * 1000;
     var draftMsg = "Choose the improvement and the occupation that you want to add to your hand and confirm.";
     var draftWaitingMsg = "Round #0";
 
-    // main functions
+    // Global variables
+    var agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, alerted;
     initialize();
-    createCardSpace();
 
+    // Main
+    createCardSpace();
     setAlert();
+
     if (!(draftWaiting || drafting)) {
         setCardTooltip($('#dvCartesPosees td.clCarteMf'));
         setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 345 });
@@ -42,9 +41,9 @@
         setCardTooltip($("form[name=fmDraft] div.clCarteMf"));
     }
 
-    // sub functions
+    // Functions
     function initialize() {
-        agrid = getAgricolaId();
+        agrid = document.location.href.match(/\d+/)[0];
         alerted = agrid + "_alerted";
         drafting = (document.body.innerHTML.match(draftMsg));
         draftWaiting = (document.body.innerHTML.match(draftWaitingMsg));
@@ -61,11 +60,10 @@
             $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
         }
 
-        $('#conteneur').after('<div id="ja-texts" style="display:none"></div>');
-        $('#ja-texts').append(jaTextHtml);
+        $('#conteneur').after('<div id="ja-texts" style="display:none">' + jaTextHtml + '</div>');
     }
 
-    function setCardTooltip($targets, cluetip_options) {
+    function setCardTooltip(selector, cluetip_options) {
         cluetip_options = $.extend({
             multiple: true,
             cluetipClass: 'agricola',
@@ -81,8 +79,8 @@
             showTitle: true
         }, cluetip_options || {});
 
-        $targets.each(function () {
-            var selector = '#ja-text-' + getCardNumber($(this).attr('title'))[0];
+        $(selector).each(function () {
+            var selector = '#ja-text-' + $(this).attr('title').match(/^\d+/)[0];
             if ($(selector).is('*')) {
                 $(this).attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
                     .cluetip(cluetip_options);
@@ -108,9 +106,7 @@
              } else if (!GM_getValue(agrid, false)) {
                 GM_setValue(alerted, false);
              }
-
         });
-
         setTimeout(setAlert, ajaxmsec);
     }
 
@@ -199,14 +195,6 @@
         }
 
         return actions;
-    }
-
-    function getAgricolaId() {
-        return document.location.href.match(/\d+/)[0];
-    }
-
-    function getCardNumber(cardname) {
-        return cardname.match(/^\d+/);
     }
 
     function GM_getValue(key, defaultValue)
