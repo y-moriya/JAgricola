@@ -4,7 +4,7 @@
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
 // @version     2.0.2
-// @require     http://code.jquery.com/jquery-1.8.2.js
+// @require     http://code.jquery.com/jquery-1.8.2.min.js
 // @require     https://raw.github.com/kswedberg/jquery-cluetip/master/jquery.cluetip.min.js
 // @grant       hoge
 // ==/UserScript==
