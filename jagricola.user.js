@@ -10,13 +10,6 @@
 // ==/UserScript==
 
 (function (jaTextHtml) {
-    // Class
-    var Action = function(round, player, action) {
-        this.round = round;
-        this.player = player;
-        this.action = action;
-    };
-
     // Constants
     var ajaxmsec = 10 * 1000;
     var draftMsg = "Choose the improvement and the occupation that you want to add to your hand and confirm.";
@@ -122,8 +115,7 @@
     function setAjaxHistory() {
         $.get('historique.php', { id : agrid }, function(data) {
             var $self = $(data);
-            var players = $self.find('th').has('div').map(function () { return $(this).text().trim(); }).toArray();
-            var actions = getActions(data, players);
+            var actions = getActions($self);
 
             if (lastTurn == 0 && actions.length >= 5) {
                 lastTurn = actions.length - 5;
@@ -144,42 +136,30 @@
         $("#history tbody").prepend("<tr><td style=\"text-align: center;\">" + act.round + "</td><td>" + act.player + "</td><td>" + act.action + "</td></tr>");
     }
 
-    function getActions(data, players) {
-        var actions = [];
-        var rounds = [];
-        var round = 0;
-        var n = 0;
-        var player = 0;
-        var act = "";
-        var rows = data.match(/<tr .+?<\/tr>/g);
-        for (i = 0; i < rows.length; i = i + 1) {
-            var datas = rows[i].match(/<td .+?<\/td>/g);
-            for (j = 0; j < datas.length; j = j + 1) {
+    function getActions(data) {
+      var $self = $(data);
+      var players = $self.find('th').has('div').map(function () { return $(this).text().trim(); }).get();
+      var round = 1;
 
-                if (datas.length != players.length && j == 0) {
-                    round = round + 1;
-                    continue;
-                }
-
-                if (datas[j].match("&nbsp;")) {
-                    continue;
-                }
-
-                player = j;
-                if (datas.length != players.length) {
-                    player = j - 1;
-                }
-
-                if (datas[j].match(/>(\d+)<\/div>(.+)<\/td>/)) {
-                    n = RegExp.$1;
-                    act = RegExp.$2;
-
-                    actions[Number(n) - 1] = new Action(round, players[player], act);
-                }
-            }
+      return $self.find('tr.clHistoFonce, tr.clHistoClair').map(function () {
+        var $self = $(this);
+        $round = $self.find('td.clHisto[rowspan]');
+        if ($round.is('*')) {
+          round = $round.text();
         }
 
-        return actions;
+        return $self.find('td.clHisto:not([rowspan])').map(function (i) {
+          var $self = $(this);
+          if ($self.find('div').is('*')) {
+            return {
+              id: parseInt($self.find('div').text(), 10),
+              round: round,
+              player: players[i],
+              action: $self.clone().find('div').remove().end().html()
+            };
+          }
+        }).get();
+      }).get().sort(function (a, b) { return b.id < a.id; });
     }
 
     function GM_getValue(key, defaultValue)
