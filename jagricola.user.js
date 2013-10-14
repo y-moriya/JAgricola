@@ -21,17 +21,14 @@
 
     // Main
     createCardSpace();
+    setCardTooltip($('#dvCartesPosees td.clCarteMf')); // 場札
+    setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 345 }); // 大進捗
+    setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 345 }); // 手札
+    setCardTooltip($("form[name=fmDraft] div.clCarteMf")); // ドラフト
+    hookShowExp();
     setAlert();
-
-    if (!(draftWaiting || drafting)) {
-        setCardTooltip($('#dvCartesPosees td.clCarteMf'));
-        setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 345 });
-        setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 345 });
-        hookShowExp();
+    if (!(drafting || draftWaiting)) {
         setAjaxHistory();
-    }
-    if (drafting) {
-        setCardTooltip($("form[name=fmDraft] div.clCarteMf"));
     }
 
     // Functions
