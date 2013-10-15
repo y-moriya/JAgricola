@@ -87,16 +87,23 @@
     }
 
     function hookScoreCluetip() {
-        new window.MutationObserver(function(mutations, observer) {
-            $targets = $('#cluetip table.clScore td span');
-            if ($targets.is('*')) {
-                $targets.each(function () {
-                    var id = '#ja-text-' + $(this).text().match(/^\d+/)[0];
-                    $(this).attr('title', $(id).attr('title'));
-                });
-                setCardTooltip($targets, { leftOffset: 20 });
+        var observed = false;
+        $('a.clDecompte').click(function() {
+            if (observed) {
+                return;
             }
-        }).observe($('#cluetip .ui-cluetip-content')[0], { childList: true });
+            new window.MutationObserver(function(mutations, observer) {
+                $targets = $('#cluetip table.clScore td span');
+                if ($targets.is('*')) {
+                    $targets.each(function () {
+                        var id = '#ja-text-' + $(this).text().match(/^\d+/)[0];
+                        $(this).attr('title', $(id).attr('title'));
+                    });
+                    setCardTooltip($targets, { leftOffset: 20 });
+                }
+            }).observe($('#cluetip .ui-cluetip-content')[0], { childList: true });
+            observed = true;
+        });
     }
 
     function setAlert() {
