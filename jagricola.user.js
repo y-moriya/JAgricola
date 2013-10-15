@@ -26,6 +26,7 @@
     setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 345 }); // 手札
     setCardTooltip($("form[name=fmDraft] div.clCarteMf")); // ドラフト
     hookShowExp();
+    hookScoreCluetip();
     setAlert();
     if (!(drafting || draftWaiting)) {
         setAjaxHistory();
@@ -83,6 +84,19 @@
         new window.MutationObserver(function(mutations, observer) {
             setCardTooltip($('#dvCartesPosees td.clCarteMf'), { leftOffset: 170 });
         }).observe($('#dvCartesPosees')[0], { childList: true });
+    }
+
+    function hookScoreCluetip() {
+        new window.MutationObserver(function(mutations, observer) {
+            $targets = $('#cluetip table.clScore td span');
+            if ($targets.is('*')) {
+                $targets.each(function () {
+                    var id = '#ja-text-' + $(this).text().match(/^\d+/)[0];
+                    $(this).attr('title', $(id).attr('title'));
+                });
+                setCardTooltip($targets, { leftOffset: 20 });
+            }
+        }).observe($('#cluetip .ui-cluetip-content')[0], { childList: true });
     }
 
     function setAlert() {
