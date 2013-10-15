@@ -44,10 +44,11 @@
     }
 
     function createCardSpace() {
+        var historyTableHtml = '<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>';
         if ($("form[name=fmMiniForum]").length == 0) {
-            $("img[src*=cartesenjeu]").parent().next().append('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
+            $("img[src*=cartesenjeu]").parent().next().append(historyTableHtml);
         } else {
-            $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
+            $("form[name=fmMiniForum]").after(historyTableHtml);
         }
 
         $('body').append('<div id="ja-texts" style="display:none">' + jaTextHtml + '</div>');
