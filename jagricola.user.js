@@ -141,7 +141,7 @@
 
       return $self.find('tr.clHistoFonce, tr.clHistoClair').map(function () {
         var $self = $(this);
-        $round = $self.find('td.clHisto[rowspan]');
+        var $round = $self.find('td.clHisto[rowspan]');
         if ($round.is('*')) {
           round = $round.text();
         }
