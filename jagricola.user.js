@@ -50,7 +50,7 @@
             $("form[name=fmMiniForum]").after('<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>');
         }
 
-        $('#conteneur').after('<div id="ja-texts" style="display:none">' + jaTextHtml + '</div>');
+        $('body').append('<div id="ja-texts" style="display:none">' + jaTextHtml + '</div>');
     }
 
     function setCardTooltip(selector, cluetip_options) {
