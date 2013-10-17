@@ -9,14 +9,19 @@
 // @grant       hoge
 // ==/UserScript==
 
-(function (jaTextHtml) {
+;(function (jaTextHtml, $, undefined) {
+    'use strict';
+
     // Constants
-    var ajaxmsec = 10 * 1000;
-    var draftMsg = "Choose the improvement and the occupation that you want to add to your hand and confirm.";
-    var draftWaitingMsg = "Round #0";
+    var AJAXMSEC = 10 * 1000,
+        DRAFTMSG = "Choose the improvement and the occupation that you want to add to your hand and confirm.",
+        DRAFTWAITINGMSG = "Round #0",
+        AUDIO_LIST = {
+            BELL: new Audio("http://heaven.gunjobiyori.com/up1157.wav")
+        };
 
     // Global variables
-    var agrid, drafting, draftWaiting, AUDIO_LIST, lastTurn, alerted;
+    var agrid, drafting, draftWaiting, lastTurn, alerted;
     initialize();
 
     // Main
@@ -36,12 +41,9 @@
     function initialize() {
         agrid = document.location.href.match(/\d+/)[0];
         alerted = agrid + "_alerted";
-        drafting = (document.body.innerHTML.match(draftMsg));
-        draftWaiting = (document.body.innerHTML.match(draftWaitingMsg));
+        drafting = document.body.innerHTML.match(DRAFTMSG);
+        draftWaiting = document.body.innerHTML.match(DRAFTWAITINGMSG);
         lastTurn = 0;
-        AUDIO_LIST = {
-            "bell": new Audio("http://heaven.gunjobiyori.com/up1157.wav")
-        };
     }
 
     function createCardSpace() {
@@ -93,7 +95,7 @@
                 return;
             }
             new window.MutationObserver(function(mutations, observer) {
-                $targets = $('#cluetip table.clScore td span');
+                var $targets = $('#cluetip table.clScore td span');
                 if ($targets.is('*')) {
                     $targets.each(function () {
                         var id = '#ja-text-' + $(this).text().match(/^\d+/)[0];
@@ -110,7 +112,7 @@
         $.get('index.php', { p : "encours" }, function(data) {
             parseIndex(data);
             if (GM_getValue(agrid, false) && !GM_getValue(alerted, false)) {
-                AUDIO_LIST["bell"].play();
+                AUDIO_LIST.BELL.play();
                 alert("It's your turn!");
                 GM_setValue(alerted, true);
 
@@ -119,22 +121,23 @@
                 GM_setValue(alerted, false);
              }
         });
-        setTimeout(setAlert, ajaxmsec);
+        setTimeout(setAlert, AJAXMSEC);
     }
 
     function parseIndex(data) {
         $($(data).find(".clLigne1, .clLigne2")).each(function () {
-            var $self = $(this);
-            var gameid = $self.find('a:first').text();
-            var myturn = $self.find('[style*="color"][style*="red"]').is('*');
+            var $self = $(this),
+                gameid = $self.find('a:first').text(),
+                myturn = $self.find('[style*="color"][style*="red"]').is('*');
             GM_setValue(gameid, myturn);
         });
     }
 
     function setAjaxHistory() {
         $.get('historique.php', { id : agrid }, function(data) {
-            var $self = $(data);
-            var actions = getActions($self);
+            var $self = $(data),
+                actions = getActions($self),
+                i;
 
             if (lastTurn == 0 && actions.length >= 5) {
                 lastTurn = actions.length - 5;
@@ -148,7 +151,7 @@
             lastTurn = actions.length;
         });
 
-        setTimeout(setAjaxHistory, ajaxmsec);
+        setTimeout(setAjaxHistory, AJAXMSEC);
     }
 
     function addAction(act) {
@@ -156,13 +159,13 @@
     }
 
     function getActions(data) {
-      var $self = $(data);
-      var players = $self.find('th').has('div').map(function () { return $(this).text().trim(); }).get();
-      var round = 1;
+      var $self = $(data),
+          players = $self.find('th').has('div').map(function () { return $(this).text().trim(); }).get(),
+          round = 1;
 
       return $self.find('tr.clHistoFonce, tr.clHistoClair').map(function () {
-        var $self = $(this);
-        var $round = $self.find('td.clHisto[rowspan]');
+        var $self = $(this),
+            $round = $self.find('td.clHisto[rowspan]');
         if ($round.is('*')) {
           round = $round.text();
         }
@@ -196,7 +199,7 @@
       window.localStorage.setItem(key , value);
     }
 
-})('\
+}('\
 <div id="ja-text-1" title="1. かまど"><p style="font-style:italic">コスト: 2x<img align="absmiddle" src="img/pionArgile16.png"></p>あなたはいつでも、作物や動物を以下の通り食料に換えられる。野菜:食料2、羊:食料2、猪:食料2、牛:食料3。「パンを焼く」のアクションでは、小麦1を食料2に換えられる。<br>* あなたは複数のかまどを所有できる。<br>* このカードで、動物や野菜を同時にいくらでも食料にできる。「パンを焼く」場合は、一度に小麦をいくつでも食料にできる。三つ足やかんの能力を起動するために、パンを焼くのと同時に他の品物を食料にしてもよい。<br>* アクションスペースから動物を入手した場合、それを牧場に入れるスペースがなくても、牧場に入れずにただちに食料に換えることができる。<br>* かまどは暖炉ではない。<br>* 収穫の繁殖フェイズの間は、動物を食料に換えられない。最後の収穫の繁殖フェイズの後は、ただちにゲーム終了となるため、最後の繁殖フェイズで入手した動物を食料に換えることはできない。</div>\
 <div id="ja-text-2" title="2. かまど"><p style="font-style:italic">コスト: 3x<img align="absmiddle" src="img/pionArgile16.png"></p>あなたはいつでも、作物や動物を以下の通り食料に換えられる。野菜:食料2、羊:食料2、猪:食料2、牛:食料3。「パンを焼く」のアクションでは、小麦1を食料2に換えられる。<br>* あなたは複数のかまどを所有できる。<br>* このカードで、動物や野菜を同時にいくらでも食料にできる。「パンを焼く」場合は、一度に小麦をいくつでも食料にできる。三つ足やかんの能力を起動するために、パンを焼くのと同時に他の品物を食料にしてもよい。<br>* アクションスペースから動物を入手した場合、それを牧場に入れるスペースがなくても、牧場に入れずにただちに食料に換えることができる。<br>* かまどは暖炉ではない。<br>* 収穫の繁殖フェイズの間は、動物を食料に換えられない。最後の収穫の繁殖フェイズの後は、ただちにゲーム終了となるため、最後の繁殖フェイズで入手した動物を食料に換えることはできない。</div>\
 <div id="ja-text-3" title="3. 調理場"><p style="font-style:italic">コスト: 4x<img align="absmiddle" src="img/pionArgile16.png"> または かまどを返す</p>あなたはいつでも、作物や動物を以下の通り食料に換えられる。野菜:食料3、羊:食料2、猪:食料3、牛:食料4。「パンを焼く」のアクションでは、小麦1を食料3に換えられる。<br>* 大きい進歩のかまどをアップグレードする場合、元のかまどは大きい進歩置き場に返す。小さい進歩の簡易かまどをアップグレードする場合、元の簡易かまどはゲームから取り除く。<br>* あなたは、複数個の調理場を所有できる。<br>* このカードで、動物や野菜を同時にいくらでも食料にできる。「パンを焼く」場合は、一度に小麦をいくつでも食料にできる。三つ足やかんの能力を起動するために、パンを焼くのと同時に他の品物を食料にしてもよい。<br>* 調理場は暖炉ではない。<br>* アクションスペースから動物を入手した場合、それを牧場に入れるスペースがなくても、牧場に入れずにただちに食料に換えることができる。<br>* 収穫の繁殖フェイズの間は、動物を食料に換えられない。最後の収穫の繁殖フェイズの後は、ただちにゲーム終了となるため、最後の繁殖フェイズで入手した動物を食料に換えることはできない。</div>\
@@ -540,4 +543,4 @@
 <div id="ja-text-341" title="341. ギルド長"><p style="font-style:italic">コスト: なし</p>家具製作所(A7)か家具職人(I258)を出すと木材4を得る。製陶所(A8)か陶工(E214)を出すとレンガ4を得る。かご製作所(A9)かご編み(E183)を出すと葦3を得る。ギルド長を出した時点でこれらのカードがすでに場に出ている場合は、すでに出されているカードごとに対応する資材2を得る。<br>* ギルド長をプレイする前に家具製作所を製材所(K122)にしていた場合でも、木材2を得る。<br>* 資材は、カードを出した後に得る。得られる資材をカードの支払いコストに充ててはならない。</div>\
 <div id="ja-text-342" title="342. 猛獣使い"><p style="font-style:italic">コスト: なし</p>「小劇場」のスペースから食料を取るたび、それを家畜の購入に充てても良い。羊は1匹につき食料2、猪は1匹につき食料2、牛は1匹につき食料3。<br>* アクションスペースに置かれている食料のみを、家畜の購入に使うことができる。たとえば、旅芸人(I237)または踊り手(E212)を場に出している場合に発生する追加の食料は家畜の購入には使えない。<br>* 旅芸人(I237)を場に出している他のプレイヤーが「小劇場」のアクションを行った場合、あなたに食料1を支払う。<br>* 適切な進歩を持っていれば、手に入れた家畜を即座に食料に換えても良い。このとき、農場に家畜を置くスペースがなくてもよい。ただし、この方法で得た食料を猛獣使いの能力に使用することはできない。</div>\
 <div id="ja-text-999" title="999. 物乞い"><p style="font-style:italic">コスト: なし</p>In each harvest, if you can\'t feed your family, you receive a mendicity card for each missing Food.</div>\
-');
+', jQuery));
