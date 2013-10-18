@@ -74,7 +74,7 @@
         }, cluetip_options || {});
 
         $(selector).each(function () {
-            var selector = '#ja-text-' + $(this).attr('title').match(/^\d+/)[0];
+            var selector = '#ja-text-' + $(this).attr('rel').match(/\d+$/)[0];
             if ($(selector).is('*')) {
                 $(this).attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
                     .cluetip(cluetip_options);
