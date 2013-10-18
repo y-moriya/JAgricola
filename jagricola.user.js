@@ -9,7 +9,7 @@
 // @grant       hoge
 // ==/UserScript==
 
-;(function (jaTextHtml, $, undefined) {
+;(function (jaTextHtml, jaActionHtml, $, undefined) {
     'use strict';
 
     // Constants
@@ -27,10 +27,11 @@
     // Main
     createCardSpace();
     setCardTooltip($('#dvCartesPosees td.clCarteMf')); // 場札
-    setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 345 }); // 大進捗
-    setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 345 }); // 手札
-    setCardTooltip($('#dvPanneauAction div.clCarteMf')); // アクション
+    setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 220 + 120 + 5 }); // 大進捗
+    setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 220 + 120 + 5 }); // 手札
+    setCardTooltip($('#dvPanneauAction div.clCarteMf'), { leftOffset: 720 + 220 + 120 + 5 }); // アクション(カード)
     setCardTooltip($('form[name=fmDraft] div.clCarteMf')); // ドラフト
+    setActionTooltip($('#dvPanneauAction div.clCaseAction'), { leftOffset: 720 + 180 + 120 + 5 }); // アクション
     hookShowExp();
     hookScoreCluetip();
     setAlert();
@@ -56,9 +57,10 @@
         }
 
         $('body').append('<div id="ja-texts" style="display:none">' + jaTextHtml + '</div>');
+        $('body').append('<div id="ja-actionss" style="display:none">' + jaActionHtml + '</div>');
     }
 
-    function setCardTooltip(selector, cluetip_options) {
+    function setTooltip(selector, type, cluetip_options) {
         cluetip_options = $.extend({
             multiple: true,
             cluetipClass: 'agricola',
@@ -75,12 +77,20 @@
         }, cluetip_options || {});
 
         $(selector).each(function () {
-            var selector = '#ja-text-' + $(this).attr('rel').match(/\d+$/)[0];
+            var selector = '#' + type + '-' + $(this).attr('rel').match(/\d+$/)[0];
             if ($(selector).is('*')) {
                 $(this).attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
                     .cluetip(cluetip_options);
             }
         });
+    }
+
+    function setActionTooltip(selector, cluetip_options) {
+        setTooltip(selector, 'ja-action', cluetip_options);
+    }
+
+    function setCardTooltip(selector, cluetip_options) {
+        setTooltip(selector, 'ja-text', cluetip_options);
     }
 
     function hookShowExp() {
@@ -544,4 +554,45 @@
 <div id="ja-text-341" title="341. ギルド長"><p style="font-style:italic">コスト: なし</p>家具製作所(A7)か家具職人(I258)を出すと木材4を得る。製陶所(A8)か陶工(E214)を出すとレンガ4を得る。かご製作所(A9)かご編み(E183)を出すと葦3を得る。ギルド長を出した時点でこれらのカードがすでに場に出ている場合は、すでに出されているカードごとに対応する資材2を得る。<br>* ギルド長をプレイする前に家具製作所を製材所(K122)にしていた場合でも、木材2を得る。<br>* 資材は、カードを出した後に得る。得られる資材をカードの支払いコストに充ててはならない。</div>\
 <div id="ja-text-342" title="342. 猛獣使い"><p style="font-style:italic">コスト: なし</p>「小劇場」のスペースから食料を取るたび、それを家畜の購入に充てても良い。羊は1匹につき食料2、猪は1匹につき食料2、牛は1匹につき食料3。<br>* アクションスペースに置かれている食料のみを、家畜の購入に使うことができる。たとえば、旅芸人(I237)または踊り手(E212)を場に出している場合に発生する追加の食料は家畜の購入には使えない。<br>* 旅芸人(I237)を場に出している他のプレイヤーが「小劇場」のアクションを行った場合、あなたに食料1を支払う。<br>* 適切な進歩を持っていれば、手に入れた家畜を即座に食料に換えても良い。このとき、農場に家畜を置くスペースがなくてもよい。ただし、この方法で得た食料を猛獣使いの能力に使用することはできない。</div>\
 <div id="ja-text-999" title="999. 物乞い"><p style="font-style:italic">コスト: なし</p>In each harvest, if you can\'t feed your family, you receive a mendicity card for each missing Food.</div>\
+', '\
+<div  id="ja-action-1" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき 3 木を補充する。</div>\
+<div  id="ja-action-2" title="レンガ">このアクションのレンガを全て取る。<br>1 ラウンドにつき 1 レンガを補充する。</div>\
+<div  id="ja-action-3" title="葦">このアクションの葦を全て取る。<br>1 ラウンドにつき 1 葦を補充する。</div>\
+<div  id="ja-action-4" title="漁">このアクションの食糧を全て取る。<br>1 ラウンドにつき 1 食糧を補充する。</div>\
+<div  id="ja-action-5" title="増築 かつ、または 厩建設">増築 1 軒ごとに 2 葦 5 木/レンガ/石を支払う。厩 1 軒ごとに 2 木を支払う。</div>\
+<div  id="ja-action-7" title="小麦">ストックから 1 小麦を取る。</div>\
+<div  id="ja-action-8" title="耕す">空き地を 1 つ、畑にする。</div>\
+<div id="ja-action-11" title="スタートプレイヤー かつ、または 小進捗">スタートプレイヤートークンを取る。そして、手札からひとつ小進捗をプレイしてもよい。</div>\
+<div id="ja-action-12" title="職業">手札からひとつ職業をプレイする。最初の職業はコストなしでプレイできる。以降の職業は 1 食糧を支払う。</div>\
+<div id="ja-action-13" title="日雇い">ストックから 2 食糧を取る。</div>\
+<div id="ja-action-14" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき 2 木を補充する。</div>\
+<div id="ja-action-15" title="レンガ">このアクションのレンガを全て取る。<br>1 ラウンドにつき 1 レンガを補充する。</div>\
+<div id="ja-action-16" title="建築材">ストックから 1 建築材を取る。</div>\
+<div id="ja-action-18" title="職業">手札からひとつ職業をプレイする。それぞれの職業は 2 食糧を支払う。</div>\
+<div id="ja-action-19" title="葦、木と石">このアクションの葦を全て取り、1 木と 1 石をストックから取る。<br>1 ラウンドにつき 1 葦を補充する。</div>\
+<div id="ja-action-20" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき 1 木を補充する。</div>\
+<div id="ja-action-21" title="レンガ">このアクションのレンガを全て取る。<br>1 ラウンドにつき 2 レンガを補充する。</div>\
+<div id="ja-action-22" title="小劇場">このアクションの食糧を全て取る。<br>1 ラウンドにつき 1 食糧を補充する。</div>\
+<div id="ja-action-23" title="職業">手札からひとつ職業をプレイする。<br>最初の 2 つの職業は 1 食料を支払う。以降の職業は 2 食料を支払う。</div>\
+<div id="ja-action-24" title="支給品">ストックから 1 葦、1 石、1 木を取る。</div>\
+<div id="ja-action-25" title="木材">このアクションの木を全て取る。<br>1 ラウンドにつき 4 木を補充する。</div>\
+<div id="ja-action-26" title="レンガ">このアクションのレンガを全て取る。<br>1 ラウンドにつき 3 個レンガを補充する。</div>\
+<div id="ja-action-28" title="職業">手札からひとつ職業をプレイする。ラウンド 5 以降であれば、職業をプレイする代わりに家族を増やすこともできる。<br>最初の 2 つの職業は 1 食料を支払う。以降の職業は 2 食料を支払う。</div>\
+<div id="ja-action-29" title="増築/小劇場">2 葦と 5 木/レンガ/石で家を一軒増築する。もしくはこのアクションの食料を全て取る。<br>1 ラウンドにつき 1 食料を補充する。</div>\
+<div id="ja-action-30" title="動物">以下から 1 つ選ぶ：<br>　1 羊と 1 食料を取る。<br>　1 猪を取る。<br>　1 食料を支払い、1 牛を取る。</div>\
+<div id="ja-action-31" title="羊">このアクションの羊を全て取る。<br>1 ラウンドにつき 1 羊を補充する。</div>\
+<div id="ja-action-32" title="進捗">進捗をプレイする。</div>\
+<div id="ja-action-33" title="柵">柵を設置する。<br>柵を設置するためには木と柵が必要。</div>\
+<div id="ja-action-34" title="種をまく かつ、または パンを焼く">あなたの畑に種をまく かつ、または パンを焼く</div>\
+<div id="ja-action-35" title="改築 そして 進捗">改築を行う。そして、手札からひとつ進捗をプレイしてもよい。</div>\
+<div id="ja-action-36" title="家族を増やす そして 小進捗">家族を増やす。そして、手札からひとつ小進捗をプレイしてもよい。</div>\
+<div id="ja-action-37" title="石">このアクションの石を全て取る。<br>1 ラウンドにつき 1 石を補充する。</div>\
+<div id="ja-action-38" title="猪">このアクションの猪を全て取る。<br>1 ラウンドにつき 1 猪を補充する。</div>\
+<div id="ja-action-39" title="野菜">ストックから 1 野菜を取る。</div>\
+<div id="ja-action-40" title="牛">このアクションの牛を全て取る。<br>1 ラウンドにつき 1 牛を補充する。</div>\
+<div id="ja-action-41" title="石">このアクションの石を全て取る。<br>1 ラウンドにつき 1 石を補充する。</div>\
+<div id="ja-action-42" title="耕す かつ、または 種をまく">畑をひとつ耕し、畑に種をまく。</div>\
+<div id="ja-action-43" title="家族を増やす 部屋がなくてもよい"></div>\
+<div id="ja-action-44" title="改築 そして 柵">改築を行う。そして、柵を設置してもよい。</div>\
+<div id="ja-action-47" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき 2 木を補充する。</div>\
 ', jQuery));
