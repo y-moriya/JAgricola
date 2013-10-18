@@ -29,7 +29,8 @@
     setCardTooltip($('#dvCartesPosees td.clCarteMf')); // 場札
     setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 345 }); // 大進捗
     setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 345 }); // 手札
-    setCardTooltip($("form[name=fmDraft] div.clCarteMf")); // ドラフト
+    setCardTooltip($('#dvPanneauAction div.clCarteMf')); // アクション
+    setCardTooltip($('form[name=fmDraft] div.clCarteMf')); // ドラフト
     hookShowExp();
     hookScoreCluetip();
     setAlert();
