@@ -18,7 +18,13 @@
         DRAFTWAITINGMSG = "Round #0",
         AUDIO_LIST = {
             BELL: new Audio("http://heaven.gunjobiyori.com/up1157.wav")
-        };
+        },
+        CARD_TOOLTIP_WIDTH = 220,
+        ACTION_TOOLTIP_WIDTH = 180,
+        TOOLTIP_LEFT_OFFSET = 120,
+        TOOLTIP_MARGIN = 5,
+        CARD_LEFT_OFFSET   = CARD_TOOLTIP_WIDTH   + TOOLTIP_LEFT_OFFSET + TOOLTIP_MARGIN,
+        ACTION_LEFT_OFFSET = ACTION_TOOLTIP_WIDTH + TOOLTIP_LEFT_OFFSET + TOOLTIP_MARGIN;
 
     // Global variables
     var agrid, drafting, draftWaiting, lastTurn, alerted;
@@ -27,11 +33,11 @@
     // Main
     createCardSpace();
     setCardTooltip($('#dvCartesPosees td.clCarteMf')); // 場札
-    setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: 670 + 220 + 120 + 5 }); // 大進捗
-    setCardTooltip($('#dvPanneauMain td.clCarteMf'), { leftOffset: 910 + 220 + 120 + 5 }); // 手札
-    setCardTooltip($('#dvPanneauAction div.clCarteMf'), { leftOffset: 720 + 220 + 120 + 5 }); // アクション(カード)
+    setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - $('#dvPanneauAmelioration').position().left }); // 大進捗
+    setCardTooltip($('#dvPanneauMain td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - $('#dvPanneauMain').position().left });         // 手札
+    setCardTooltip($('#dvPanneauAction div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - $('#dvPanneauAction').position().left });       // アクション(カード)
     setCardTooltip($('form[name=fmDraft] div.clCarteMf')); // ドラフト
-    setActionTooltip($('#dvPanneauAction div.clCaseAction'), { leftOffset: 720 + 180 + 120 + 5 }); // アクション
+    setActionTooltip($('#dvPanneauAction div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - $('#dvPanneauAction').position().left, width: ACTION_TOOLTIP_WIDTH }); // アクション
     hookShowExp();
     hookScoreCluetip();
     setAlert();
@@ -70,8 +76,8 @@
             local: true,
             attribute: 'data-jp-text',
             titleAttribute: 'data-jp-title',
-            width: 220,
-            leftOffset: 220 + 120 + 5,
+            width: CARD_TOOLTIP_WIDTH,
+            leftOffset: CARD_LEFT_OFFSET,
             cursor: 'pointer',
             showTitle: true
         }, cluetip_options || {});
