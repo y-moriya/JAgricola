@@ -142,7 +142,7 @@
     }
 
     function parseIndex(data) {
-        $($(data).find(".clLigne1, .clLigne2")).each(function () {
+        $(data).find("div.clLigne1, div.clLigne2").each(function () {
             var $self = $(this),
                 gameid = $self.find('a:first').text(),
                 myturn = $self.find('[style*="color"][style*="red"]').is('*');
