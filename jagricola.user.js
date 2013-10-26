@@ -77,10 +77,16 @@
         }, cluetip_options || {});
 
         $(selector).each(function () {
-            var selector = '#' + type + '-' + $(this).attr('rel').match(/\d+$/)[0];
-            if ($(selector).is('*')) {
-                $(this).attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
-                    .cluetip(cluetip_options);
+            var $self = $(this),
+                rel = $self.attr('rel'),
+                selector;
+
+            if (rel && rel.match(/\d+$/)) {
+                selector = '#' + type + '-' + rel.match(/\d+$/)[0];
+                if ($(selector).is('*')) {
+                    $self.attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
+                        .cluetip(cluetip_options);
+                }
             }
         });
     }
