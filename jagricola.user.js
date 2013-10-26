@@ -38,6 +38,7 @@
     setCardTooltip($('#dvPanneauAction div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - $('#dvPanneauAction').position().left });       // アクション(カード)
     setCardTooltip($('form[name=fmDraft] div.clCarteMf')); // ドラフト
     setActionTooltip($('#dvPanneauAction div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - $('#dvPanneauAction').position().left, width: ACTION_TOOLTIP_WIDTH }); // アクション
+    setScoreTooltip($('table.clScore'));
     hookShowExp();
     hookScoreCluetip();
     setAlert();
@@ -118,17 +119,21 @@
                 return;
             }
             new window.MutationObserver(function(mutations, observer) {
-                var $targets = $('#cluetip table.clScore td span');
-                if ($targets.is('*')) {
-                    $targets.each(function () {
-                        var id = '#ja-text-' + $(this).text().match(/^\d+/)[0];
-                        $(this).attr('title', $(id).attr('title'));
-                    });
-                    setCardTooltip($targets, { leftOffset: 20 });
-                }
+                setScoreTooltip('#cluetip table.clScore');
             }).observe($('#cluetip .ui-cluetip-content')[0], { childList: true });
             observed = true;
         });
+    }
+
+    function setScoreTooltip(target) {
+        var $targets = $(target).find('td span');
+        if ($targets.is('*')) {
+            $targets.each(function () {
+                var id = '#ja-text-' + $(this).text().match(/^\d+/)[0];
+                $(this).attr('title', $(id).attr('title'));
+            });
+            setCardTooltip($targets, { leftOffset: 20 });
+        }
     }
 
     function setAlert() {
