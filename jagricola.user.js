@@ -78,11 +78,11 @@
 
         $(selector).each(function () {
             var $self = $(this),
-                rel = $self.attr('rel'),
+                target = $self.attr('rel') || $self.attr('title'),
                 selector;
 
-            if (rel && rel.match(/\d+$/)) {
-                selector = '#' + type + '-' + rel.match(/\d+$/)[0];
+            if (target && target.match(/\d+/)) {
+                selector = '#' + type + '-' + target.match(/\d+/)[0];
                 if ($(selector).is('*')) {
                     $self.attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
                         .cluetip(cluetip_options);
