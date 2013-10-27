@@ -34,11 +34,11 @@
     // Main
     createCardSpace();
     setCardTooltip($('#dvCartesPosees td.clCarteMf')); // 場札
-    setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - $('#dvPanneauAmelioration').position().left }); // 大進捗
-    setCardTooltip($('#dvPanneauMain td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - $('#dvPanneauMain').position().left });         // 手札
-    setCardTooltip($('#dvPanneauAction div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - $('#dvPanneauAction').position().left });       // アクション(カード)
+    setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAmelioration') }); // 大進捗
+    setCardTooltip($('#dvPanneauMain td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
+    setCardTooltip($('#dvPanneauAction div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAction') });       // アクション(カード)
     setCardTooltip($('form[name=fmDraft] div.clCarteMf')); // ドラフト
-    setActionTooltip($('#dvPanneauAction div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - $('#dvPanneauAction').position().left, width: ACTION_TOOLTIP_WIDTH }); // アクション
+    setActionTooltip($('#dvPanneauAction div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - getLeft('#dvPanneauAction'), width: ACTION_TOOLTIP_WIDTH }); // アクション
     setScoreTooltip($('table.clScore'));
     hookShowExp();
     hookScoreCluetip();
@@ -54,6 +54,14 @@
         drafting = document.body.innerHTML.match(DRAFTMSG);
         draftWaiting = document.body.innerHTML.match(DRAFTWAITINGMSG);
         lastTurn = 0;
+    }
+
+    function getLeft(selector) {
+        var pos = $(selector).position();
+        if (pos && pos.left) {
+            return pos.left;
+        }
+        return 0;
     }
 
     function createCardSpace() {
