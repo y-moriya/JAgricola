@@ -9,7 +9,8 @@
 // @grant       hoge
 // ==/UserScript==
 
-;(function (jaTextHtml, jaActionHtml, $, undefined) {
+;$(function () {
+(function (jaTextHtml, jaActionHtml, $, undefined) {
     'use strict';
 
     // Constants
@@ -113,16 +114,9 @@
     }
 
     function hookScoreCluetip() {
-        var observed = false;
-        $('a.clDecompte').click(function() {
-            if (observed) {
-                return;
-            }
-            new window.MutationObserver(function(mutations, observer) {
-                setScoreTooltip('#cluetip table.clScore');
-            }).observe($('#cluetip .ui-cluetip-content')[0], { childList: true });
-            observed = true;
-        });
+        new window.MutationObserver(function(mutations, observer) {
+            setScoreTooltip('#cluetip table.clScore');
+        }).observe($('#cluetip .ui-cluetip-content')[0], { childList: true });
     }
 
     function setScoreTooltip(target) {
@@ -613,3 +607,4 @@
 <div id="ja-action-44" title="改築後、柵">改築を行う。その後、柵を設置してもよい。</div>\
 <div id="ja-action-47" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき木を補充する。</div>\
 ', jQuery));
+});
