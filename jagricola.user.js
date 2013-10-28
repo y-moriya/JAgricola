@@ -174,8 +174,7 @@
             }
 
             for (i = lastTurn; i < actions.length; i = i + 1) {
-                var act = actions[i];
-                addAction(act);
+                addAction(actions[i]);
             }
 
             lastTurn = actions.length;
