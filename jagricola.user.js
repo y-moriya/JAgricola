@@ -33,12 +33,12 @@
 
     // Main
     createCardSpace();
-    setCardTooltip($('#dvCartesPosees td.clCarteMf')); // 場札
-    setCardTooltip($('#dvPanneauAmelioration div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAmelioration') }); // 大進捗
-    setCardTooltip($('#dvPanneauMain td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
-    setCardTooltip($('#dvPanneauAction div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAction') });       // アクション(カード)
-    setCardTooltip($('form[name=fmDraft] div.clCarteMf')); // ドラフト
-    setActionTooltip($('#dvPanneauAction div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - getLeft('#dvPanneauAction'), width: ACTION_TOOLTIP_WIDTH }); // アクション
+    setCardTooltip($('#dvCartesPosees').find('td.clCarteMf')); // 場札
+    setCardTooltip($('#dvPanneauAmelioration').find('div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAmelioration') }); // 大進捗
+    setCardTooltip($('#dvPanneauMain').find('td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
+    setCardTooltip($('#dvPanneauAction').find('div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAction') });       // アクション(カード)
+    setCardTooltip($('form[name=fmDraft]').find('div.clCarteMf')); // ドラフト
+    setActionTooltip($('#dvPanneauAction').find('div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - getLeft('#dvPanneauAction'), width: ACTION_TOOLTIP_WIDTH }); // アクション
     setScoreTooltip($('table.clScore'));
     hookShowExp();
     hookScoreCluetip();
@@ -99,7 +99,7 @@
 
             if (target && target.match(/\d+/)) {
                 selector = '#' + type + '-' + target.match(/\d+/)[0];
-                if ($(selector).is('*')) {
+                if ($(selector).length) {
                     $self.attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
                         .cluetip(cluetip_options);
                 }
@@ -117,19 +117,19 @@
 
     function hookShowExp() {
         new window.MutationObserver(function(mutations, observer) {
-            setCardTooltip($('#dvCartesPosees td.clCarteMf'), { leftOffset: 170 });
+            setCardTooltip($('#dvCartesPosees').find('td.clCarteMf'), { leftOffset: 170 });
         }).observe($('#dvCartesPosees')[0], { childList: true });
     }
 
     function hookScoreCluetip() {
         new window.MutationObserver(function(mutations, observer) {
-            setScoreTooltip('#cluetip table.clScore');
-        }).observe($('#cluetip .ui-cluetip-content')[0], { childList: true });
+            setScoreTooltip('#cluetip').find('table.clScore');
+        }).observe($('#cluetip').find('.ui-cluetip-content')[0], { childList: true });
     }
 
     function setScoreTooltip(target) {
         var $targets = $(target).find('td span');
-        if ($targets.is('*')) {
+        if ($targets.length) {
             $targets.each(function () {
                 var id = '#ja-text-' + $(this).text().match(/^\d+/)[0];
                 $(this).attr('title', $(id).attr('title'));
@@ -157,8 +157,8 @@
     function parseIndex(data) {
         $(data).find("div.clLigne1, div.clLigne2").each(function () {
             var $self = $(this),
-                gameid = $self.find('a:first').text(),
-                myturn = $self.find('[style*="color"][style*="red"]').is('*');
+                gameid = $self.find('a').first().text(),
+                myturn = !!$self.find('[style*="color"][style*="red"]').length;
             GM_setValue(gameid, myturn);
         });
     }
@@ -184,33 +184,37 @@
     }
 
     function addAction(act) {
-        $("#history tbody").prepend("<tr><td style=\"text-align: center;\">" + act.round + "</td><td>" + act.player + "</td><td>" + act.action + "</td></tr>");
+        $("#history").find("tbody").prepend("<tr><td style=\"text-align: center;\">" + act.round + "</td><td>" + act.player + "</td><td>" + act.action + "</td></tr>");
     }
 
     function getActions(data) {
       var $self = $(data),
           players = $self.find('th').has('div').map(function () { return $(this).text().trim(); }).get(),
-          round = 1;
+          round = 1,
+          actions = [];
 
-      return $self.find('tr.clHistoFonce, tr.clHistoClair').map(function () {
+      $self.find('tr.clHistoFonce, tr.clHistoClair').each(function () {
         var $self = $(this),
             $round = $self.find('td.clHisto[rowspan]');
-        if ($round.is('*')) {
+        if ($round.length) {
           round = $round.text();
         }
 
-        return $self.find('td.clHisto:not([rowspan])').map(function (i) {
-          var $self = $(this);
-          if ($self.find('div').is('*')) {
-            return {
-              id: parseInt($self.find('div').text(), 10),
+        $self.find('td.clHisto:not([rowspan])').each(function (i) {
+          var $self = $(this),
+              id;
+          if ($self.find('div').length) {
+            id = parseInt($self.find('div').text(), 10);
+            actions[id] = {
+              id: id,
               round: round,
               player: players[i],
-              action: $self.clone().find('div').remove().end().html()
+              action: $self.find('div').remove().end().html()
             };
           }
-        }).get();
-      }).get().sort(function (a, b) { return b.id < a.id; });
+        });
+      });
+      return actions;
     }
 
     function GM_getValue(key, defaultValue)
