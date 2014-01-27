@@ -1,238 +1,3 @@
-// ==UserScript==
-// @name        JAgricola
-// @namespace   JAgricola
-// @description Agricola sites translates to Japanese.
-// @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     2.0.2
-// @require     http://code.jquery.com/jquery-1.8.2.min.js
-// @require     https://raw.github.com/kswedberg/jquery-cluetip/master/jquery.cluetip.min.js
-// @grant       hoge
-// ==/UserScript==
-
-;$(function () {
-(function (jaTextHtml, jaActionHtml, $, undefined) {
-    'use strict';
-
-    // Constants
-    var AJAXMSEC = 10 * 1000,
-        DRAFTMSG = "Choose the improvement and the occupation that you want to add to your hand and confirm.",
-        DRAFTWAITINGMSG = "Round #0",
-        AUDIO_LIST = {
-            BELL: new Audio("http://heaven.gunjobiyori.com/up1157.wav")
-        },
-        CARD_TOOLTIP_WIDTH = 220,
-        ACTION_TOOLTIP_WIDTH = 180,
-        TOOLTIP_LEFT_OFFSET = 120,
-        TOOLTIP_MARGIN = 5,
-        CARD_LEFT_OFFSET   = CARD_TOOLTIP_WIDTH   + TOOLTIP_LEFT_OFFSET + TOOLTIP_MARGIN,
-        ACTION_LEFT_OFFSET = ACTION_TOOLTIP_WIDTH + TOOLTIP_LEFT_OFFSET + TOOLTIP_MARGIN;
-
-    // Global variables
-    var agrid, drafting, draftWaiting, lastTurn, alerted;
-    initialize();
-
-    // Main
-    createCardSpace();
-    setCardTooltip($('#dvCartesPosees').find('td.clCarteMf')); // 場札
-    setCardTooltip($('#dvPanneauAmelioration').find('div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAmelioration') }); // 大進捗
-    setCardTooltip($('#dvPanneauMain').find('td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
-    setCardTooltip($('#dvPanneauAction').find('div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAction') });       // アクション(カード)
-    setCardTooltip($('form[name=fmDraft]').find('div.clCarteMf')); // ドラフト
-    setActionTooltip($('#dvPanneauAction').find('div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - getLeft('#dvPanneauAction'), width: ACTION_TOOLTIP_WIDTH }); // アクション
-    setScoreTooltip($('table.clScore'));
-    hookShowExp();
-    hookScoreCluetip();
-    setAlert();
-    if (!(drafting || draftWaiting)) {
-        setAjaxHistory();
-    }
-
-    // Functions
-    function initialize() {
-        agrid = document.location.href.match(/\d+/)[0];
-        alerted = agrid + "_alerted";
-        drafting = document.body.innerHTML.match(DRAFTMSG);
-        draftWaiting = document.body.innerHTML.match(DRAFTWAITINGMSG);
-        lastTurn = 0;
-    }
-
-    function getLeft(selector) {
-        var pos = $(selector).position();
-        if (pos && pos.left) {
-            return pos.left;
-        }
-        return 0;
-    }
-
-    function createCardSpace() {
-        var historyTableHtml = '<table id="history" border="0" cellpadding="1" cellspacing="1" width="250"><thead><th class="clEntete">Round</th><th class="clEntete">Player</th><th class="clEntete">Action</th></thead><tbody></tbody></table>';
-        if ($("form[name=fmMiniForum]").length == 0) {
-            $("img[src*=cartesenjeu]").parent().next().append(historyTableHtml);
-        } else {
-            $("form[name=fmMiniForum]").after(historyTableHtml);
-        }
-
-        $('body').append('<div id="ja-texts" style="display:none">' + jaTextHtml + '</div>');
-        $('body').append('<div id="ja-actionss" style="display:none">' + jaActionHtml + '</div>');
-    }
-
-    function setTooltip(selector, type, cluetip_options) {
-        cluetip_options = $.extend({
-            multiple: true,
-            cluetipClass: 'agricola',
-            clickThrough: true,
-            cluezIndex: 3000,
-            waitImage: false,
-            local: true,
-            attribute: 'data-jp-text',
-            titleAttribute: 'data-jp-title',
-            width: CARD_TOOLTIP_WIDTH,
-            leftOffset: CARD_LEFT_OFFSET,
-            cursor: 'pointer',
-            showTitle: true
-        }, cluetip_options || {});
-
-        $(selector).each(function () {
-            var $self = $(this),
-                target = $self.attr('rel') || $self.attr('title'),
-                selector;
-
-            if (target && target.match(/\d+/)) {
-                selector = '#' + type + '-' + target.match(/\d+/)[0];
-                if ($(selector).length) {
-                    $self.attr({ 'data-jp-text': selector, 'data-jp-title': $(selector).attr('title') })
-                        .cluetip(cluetip_options);
-                }
-            }
-        });
-    }
-
-    function setActionTooltip(selector, cluetip_options) {
-        setTooltip(selector, 'ja-action', cluetip_options);
-    }
-
-    function setCardTooltip(selector, cluetip_options) {
-        setTooltip(selector, 'ja-text', cluetip_options);
-    }
-
-    function hookShowExp() {
-        new window.MutationObserver(function(mutations, observer) {
-            setCardTooltip($('#dvCartesPosees').find('td.clCarteMf'), { leftOffset: 170 });
-        }).observe($('#dvCartesPosees')[0], { childList: true });
-    }
-
-    function hookScoreCluetip() {
-        new window.MutationObserver(function(mutations, observer) {
-            setScoreTooltip('#cluetip').find('table.clScore');
-        }).observe($('#cluetip').find('.ui-cluetip-content')[0], { childList: true });
-    }
-
-    function setScoreTooltip(target) {
-        var $targets = $(target).find('td span');
-        if ($targets.length) {
-            $targets.each(function () {
-                var id = '#ja-text-' + $(this).text().match(/^\d+/)[0];
-                $(this).attr('title', $(id).attr('title'));
-            });
-            setCardTooltip($targets, { leftOffset: 20 });
-        }
-    }
-
-    function setAlert() {
-        $.get('index.php', { p : "encours" }, function(data) {
-            parseIndex(data);
-            if (GM_getValue(agrid, false) && !GM_getValue(alerted, false)) {
-                AUDIO_LIST.BELL.play();
-                alert("It's your turn!");
-                GM_setValue(alerted, true);
-
-                location.href = location.href.replace(/#$/, "");
-             } else if (!GM_getValue(agrid, false)) {
-                GM_setValue(alerted, false);
-             }
-        });
-        setTimeout(setAlert, AJAXMSEC);
-    }
-
-    function parseIndex(data) {
-        $(data).find("div.clLigne1, div.clLigne2").each(function () {
-            var $self = $(this),
-                gameid = $self.find('a').first().text(),
-                myturn = !!$self.find('[style*="color"][style*="red"]').length;
-            GM_setValue(gameid, myturn);
-        });
-    }
-
-    function setAjaxHistory() {
-        $.get('historique.php', { id : agrid }, function(data) {
-            var $self = $(data),
-                actions = getActions($self),
-                i;
-
-            if (lastTurn == 0 && actions.length >= 5) {
-                lastTurn = actions.length - 5;
-            }
-
-            for (i = lastTurn; i < actions.length; i = i + 1) {
-                addAction(actions[i]);
-            }
-
-            lastTurn = actions.length;
-        });
-
-        setTimeout(setAjaxHistory, AJAXMSEC);
-    }
-
-    function addAction(act) {
-        $("#history").find("tbody").prepend("<tr><td style=\"text-align: center;\">" + act.round + "</td><td>" + act.player + "</td><td>" + act.action + "</td></tr>");
-    }
-
-    function getActions(data) {
-      var $self = $(data),
-          players = $self.find('th').has('div').map(function () { return $(this).text().trim(); }).get(),
-          round = 1,
-          actions = [];
-
-      $self.find('tr.clHistoFonce, tr.clHistoClair').each(function () {
-        var $self = $(this),
-            $round = $self.find('td.clHisto[rowspan]');
-        if ($round.length) {
-          round = $round.text();
-        }
-
-        $self.find('td.clHisto:not([rowspan])').each(function (i) {
-          var $self = $(this),
-              id;
-          if ($self.find('div').length) {
-            id = parseInt($self.find('div').text(), 10);
-            actions[id] = {
-              id: id,
-              round: round,
-              player: players[i],
-              action: $self.find('div').remove().end().html()
-            };
-          }
-        });
-      });
-      return actions;
-    }
-
-    function GM_getValue(key, defaultValue)
-    {
-      var value = window.localStorage.getItem(key);
-      if (value != null) {
-        return eval(value);
-      } else {
-        return defaultValue || null;
-      }
-    }
-
-    function GM_setValue(key, value)
-    {
-      window.localStorage.setItem(key , value);
-    }
-
-}('\
 <div id="ja-text-1" title="1. かまど"><p style="font-style:italic">コスト: 2x<img align="absmiddle" src="img/pionArgile16.png"></p>あなたはいつでも、作物や動物を以下の通り食料に換えられる。野菜:食料2、羊:食料2、猪:食料2、牛:食料3。「パンを焼く」のアクションでは、小麦1を食料2に換えられる。<br>* あなたは複数のかまどを所有できる。<br>* このカードで、動物や野菜を同時にいくらでも食料にできる。「パンを焼く」場合は、一度に小麦をいくつでも食料にできる。三つ足やかんの能力を起動するために、パンを焼くのと同時に他の品物を食料にしてもよい。<br>* アクションスペースから動物を入手した場合、それを牧場に入れるスペースがなくても、牧場に入れずにただちに食料に換えることができる。<br>* かまどは暖炉ではない。<br>* 収穫の繁殖フェイズの間は、動物を食料に換えられない。最後の収穫の繁殖フェイズの後は、ただちにゲーム終了となるため、最後の繁殖フェイズで入手した動物を食料に換えることはできない。</div>\
 <div id="ja-text-2" title="2. かまど"><p style="font-style:italic">コスト: 3x<img align="absmiddle" src="img/pionArgile16.png"></p>あなたはいつでも、作物や動物を以下の通り食料に換えられる。野菜:食料2、羊:食料2、猪:食料2、牛:食料3。「パンを焼く」のアクションでは、小麦1を食料2に換えられる。<br>* あなたは複数のかまどを所有できる。<br>* このカードで、動物や野菜を同時にいくらでも食料にできる。「パンを焼く」場合は、一度に小麦をいくつでも食料にできる。三つ足やかんの能力を起動するために、パンを焼くのと同時に他の品物を食料にしてもよい。<br>* アクションスペースから動物を入手した場合、それを牧場に入れるスペースがなくても、牧場に入れずにただちに食料に換えることができる。<br>* かまどは暖炉ではない。<br>* 収穫の繁殖フェイズの間は、動物を食料に換えられない。最後の収穫の繁殖フェイズの後は、ただちにゲーム終了となるため、最後の繁殖フェイズで入手した動物を食料に換えることはできない。</div>\
 <div id="ja-text-3" title="3. 調理場"><p style="font-style:italic">コスト: 4x<img align="absmiddle" src="img/pionArgile16.png"> または かまどを返す</p>あなたはいつでも、作物や動物を以下の通り食料に換えられる。野菜:食料3、羊:食料2、猪:食料3、牛:食料4。「パンを焼く」のアクションでは、小麦1を食料3に換えられる。<br>* 大きい進歩のかまどをアップグレードする場合、元のかまどは大きい進歩置き場に返す。小さい進歩の簡易かまどをアップグレードする場合、元の簡易かまどはゲームから取り除く。<br>* あなたは、複数個の調理場を所有できる。<br>* このカードで、動物や野菜を同時にいくらでも食料にできる。「パンを焼く」場合は、一度に小麦をいくつでも食料にできる。三つ足やかんの能力を起動するために、パンを焼くのと同時に他の品物を食料にしてもよい。<br>* 調理場は暖炉ではない。<br>* アクションスペースから動物を入手した場合、それを牧場に入れるスペースがなくても、牧場に入れずにただちに食料に換えることができる。<br>* 収穫の繁殖フェイズの間は、動物を食料に換えられない。最後の収穫の繁殖フェイズの後は、ただちにゲーム終了となるため、最後の繁殖フェイズで入手した動物を食料に換えることはできない。</div>\
@@ -296,7 +61,7 @@
 <div id="ja-text-61" title="61. 鋤車"><p style="font-style:italic">コスト: 4x<img align="absmiddle" src="img/pionBois16.png"><br>条件: 3x職業</p>ゲーム中に2回、「畑1を耕す」または「畑を耕して種をまく」のアクションで耕せる畑が、畑1でなく畑3になる。<br>* 畑3の代わりに畑2を耕しても良い。<br>* 残り使用回数を示すために、畑タイル2つをこのカードの上に置いても良い。<br>* 畑を耕すアクションスペースを使うとき、5種類の鋤類および馬鍬のどれか1つしか使えない。</div>\
 <div id="ja-text-62" title="62. 折り返し鋤"><p style="font-style:italic">コスト: 3x<img align="absmiddle" src="img/pionBois16.png"><br>条件: 2x職業</p>ゲーム中に1回、あなたは「畑1を耕す」または「畑1を耕す そして/または 種をまく」のアクションスペースを使うとき、畑1の代わりに畑3を耕しても良い。<br>* あなたは、畑3の代わりに畑2を耕すことを選んでも良い。<br>* あなたは、プレイした折り返し鋤の上に畑タイル1枚を置くことができる。これは、折り返し鋤の効果があと1回使えることを示す。<br>* 畑を耕すアクションスペースを使うとき、あなたは5種類の鋤類および馬鍬のうちどれか1つしか使えない。</div>\
 <div id="ja-text-63" title="63. 突き鋤"><p style="font-style:italic">コスト: 2x<img align="absmiddle" src="img/pionBois16.png"><br>条件: 1x職業</p>ゲーム中に2回、あなたは「畑1を耕す」のアクションで畑1のかわりに畑2を耕せる。「畑を耕して種をまく」のアクションでは使えない。<br>* このカードの上に畑タイルを2枚置き、突き鋤が残り2回使えることを表してもよい。<br>* 「畑1を耕す」のアクションスペースを使うとき、5種類の鋤類と馬鍬を使う場合は1回につきどれか1つしか使えない。</div>\
-<div id="ja-text-64" title="64. 喜捨"><p style="font-style:italic">コスト: なし<br>条件: 職業無し</p>もしあなたが職業を1つでも場に出していた場合、あなたはこのカードをプレイできない。このカードを出した時点で、既に終わっているラウンド数だけ食料を得る。このカードはプレイ後、左隣のプレイヤーの手札に入る。<br>* 現在のラウンドは、「終わっているラウンド」とはみなさない。現在のラウンドの最後のアクションで喜捨がプレイされたとしても、同様である。</div>\
+<div id="ja-text-64" title="64. 喜捨"><p style="font-style:italic">コスト: なし</p>このカードを出した時点で、既に終わっているラウンド数だけ食料を得る。このカードはプレイ後、左隣のプレイヤーの手札に入る。<br>* 現在のラウンドは、「終わっているラウンド」とはみなさない。現在のラウンドの最後のアクションで喜捨がプレイされたとしても、同様である。</div>\
 <div id="ja-text-65" title="65. パン焼き部屋"><p style="font-style:italic">コスト: 2x<img align="absmiddle" src="img/pionPierre16.png"><br>条件: 暖炉を返す</p>「パンを焼く」のアクションのたびに小麦2つまでをそれぞれ食料5にできる。このカードを出してすぐに追加で「パンを焼く」のアクションができる。<br>* パン焼き部屋は暖炉ではない。 パン焼き小屋へのアップグレードはできない。<br>* このカードを出したときに行うパンを焼くアクションでは、すでに出されている他の進歩でパンを焼いても良い。</div>\
 <div id="ja-text-66" title="66. 村の井戸"><p style="font-style:italic">コスト: なし<br>条件: 井戸を返す</p>これ以降の3ラウンドのスペースに食糧1を置く。これらのラウンドの開始時に、あなたはその食糧を得る。<br>* 大きい進歩の井戸が大きい進歩置き場に戻った後、村の井戸の所有者が再び井戸を買うことができる。<br>* 井戸は5ラウンドにわたり1食糧ずつを供給する。村の井戸をプレイしたとき、これらの食糧はそのままにしてさらに3ラウンド分の食糧を追加で置く。これに加えてさらに井戸を再度プレイしたときは、さらに追加で（5ラウンド分の）食糧を置く。</div>\
 <div id="ja-text-67" title="67. 脱穀そり"><p style="font-style:italic">コスト: 2x<img align="absmiddle" src="img/pionBois16.png"><br>条件: 2x職業</p>あなたが「畑1を耕す」または「畑1を耕す そして/または 種をまく」のアクションを使うたび、同時に「パンを焼く」のアクションもできる。</div>\
@@ -402,7 +167,7 @@
 <div id="ja-text-167" title="167. 奇術師"><p style="font-style:italic">コスト: なし</p>あなたは「小劇場」のアクションスペースで「小劇場」のアクションを行うたび、小麦1を追加で得る。<br>* 他のプレイヤーが旅芸人(I237)を使って「小劇場」のアクションを行った場合、そのプレイヤーはあなたに食糧1を支払う。</div>\
 <div id="ja-text-168" title="168. 八百屋"><p style="font-style:italic">コスト: なし</p>「小麦1を取る」のアクションスペースを使うたび、野菜1を得る。</div>\
 <div id="ja-text-169" title="169. 昔語り"><p style="font-style:italic">コスト: なし</p>あなたは「小劇場」のアクションスペースで「小劇場」のアクションを行うたび、そのスペースに食糧1を残してかわりに野菜1を受け取ることができる。<br>* 他のプレイヤーが旅芸人(I237)を使って「小劇場」のアクションを行った場合、そのプレイヤーはあなたに食糧1を支払う。<br>* 踊り手(E212)を同時にプレイしている場合、あなたはアクションスペースに食糧1を残したとき、最低4つの食糧と野菜1を得る。</div>\
-<div id="ja-text-170" title="170. 大農場管理人"><p style="font-style:italic">コスト: なし</p>ゲーム終了時、3種類の家畜の合計であなたよりも多く飼っている人がいなければ、ボーナス点を得る。3人ゲームなら2点、4人ゲームなら3点、5人ゲームなら4点。<br>* ウマ(K135)を出しているプレイヤーがいた場合、ウマはそのプレイヤーが飼っていない家畜(種類はそのプレイヤーが決める)としてふるまうが、大農場管理人の計算には含めない。ヤギ(K120)は家畜として数えない。</div>\
+<div id="ja-text-170" title="170. 大農場管理人"><p style="font-style:italic">コスト: なし</p>ゲーム終了時、3種類の家畜それぞれについてあなたよりも多く飼っている人がいなければ、ボーナス点を得る。3人ゲームなら2点、4人ゲームなら3点、5人ゲームなら4点。<br>* ウマ(K135)を出しているプレイヤーがいた場合、ウマはそのプレイヤーが飼っていない家畜(種類はそのプレイヤーが決める)としてふるまうが、大農場管理人の計算には含めない。ヤギ(K120)は家畜として数えない。</div>\
 <div id="ja-text-171" title="171. 港湾労働者"><p style="font-style:italic">コスト: なし</p>いつでも、あなたは港湾労働者の能力で木材3をレンガ1、葦1、石材1のいずれかに換えられる。また、レンガ2、葦2、石材2のいずれかを他の建築資材1つと交換できる。<br>* 建築資材とは、木材、レンガ、葦、石材のことである。</div>\
 <div id="ja-text-172" title="172. 族長"><p style="font-style:italic">コスト: 2x<img align="absmiddle" src="img/pionPN16.png"></p>ゲーム終了時、あなたは石の家の部屋1つごとに1点のボーナス点を得る。このカードをプレイするのに追加で食糧2が必要。<br>* 木骨の小屋(E21)を一緒にプレイしていた場合、あなたは部屋1つごとに4点を得る。ヴィラ(K144)を一緒にプレイしていた場合、または族長、ヴィラ、木骨の小屋3枚を一緒にプレイしていた場合は、あなたは部屋1つごとに5点を得る。</div>\
 <div id="ja-text-173" title="173. 族長の娘"><p style="font-style:italic">コスト: なし</p>他のプレイヤーが族長(E172)をプレイしたとき、あなたはすぐにこのカードを無料でプレイできる。ゲーム終了時、あなたが石の家に住んでいれば3点のボーナス点を、レンガの家に住んでいれば1点のボーナス点を得る。<br>* あなたは、このカードを通常通りの方法で(職業の)アクションスペースを使ってプレイしてもよい。<br>* あなた自身が族長(E172)をプレイした場合、族長の娘を同じタイミングで無料でプレイすることはできない。<br>* ソリティアゲームでは、あなたはこのカードを(職業の)アクションスペースを使ってプレイするしかない。<br>* 木のスリッパ(E28)を一緒にプレイしていた場合、あなたは両方のカードからボーナス点を得る。<br>* 族長のプレイに伴ってあなたが族長の娘をプレイしたとき、パン焼き棒(K111)、本棚(K112)、パトロン(E192)、職業訓練士(K271)の能力が起動する。しかし、書き机(E49)、ぶらつき学生(K275)、Therapist(O03)の能力は起動しない。(訳注：職業訓練士の起動タイミングは、族長のプレイと族長の娘のプレイを併せて2回あることになります。)</div>\
@@ -511,7 +276,7 @@
 <div id="ja-text-276" title="276. 村長"><p style="font-style:italic">コスト: なし</p>You receive wood immediately when you play this card: if played in round 12 or 13, take 1 wood; if played in round 9, 10, or 11, take 2 wood; if played in round 6, 7, or 8, take 3 wood; if played before round 6, take 4 wood. At the end of the game, any player who has no negative points receives 5 bonus points.<br>* <p>あなたはこのカードをプレイしたらすぐに木材を得る：ラウンド12〜13にプレイしたら木材1、ラウンド9〜11なら木材2、ラウンド6〜8なら木材3、ラウンド6より前なら木材4。ゲーム終了時、マイナス点がないプレイヤーは全員5点のボーナス点を得る。</div>\
 <div id="ja-text-277" title="277. 工場主"><p style="font-style:italic">コスト: なし</p>レンガか石の家に住み次第、家具製作所(A7)、製陶所(A8)、かご製作所(A9)は小さい進歩になり、好きな建築資材2つ分安くなる。</div>\
 <div id="ja-text-278" title="278. 林務官"><p style="font-style:italic">コスト: なし</p>あなたは種をまくアクションを行うとき、このカードの上に木材を植えることができる。このカードの上に木材の柱を3つまで置ける。この木材は、小麦を植えるのと同じように扱い、収穫の畑フェイズで収穫する。<br>* あなたは、木材を最大3つまで自分の手元のストックからこのカードの上に隣接させて置き、それらの木材の上に追加の木材を共通のストックから取り、重ねて置く。<br>* それぞれの収穫フェイズで、あなたはこれらの木材の山からそれぞれ木材1を取る。<br>* 小麦を植えるときに、職業の効果で1山につき(3つでなく)4つ置ける状態になっている場合、林務官の上に置く木材も同じように4つになる。小麦を1山につき5つ置ける場合は、木材も同じように5つになる。畑農(I219)を出している場合、林務官の上に木材を1つだけ植え、他の畑には何も植えない場合は山の高さを5にでき、林務官の上に木材を2つだけ植え、他の畑には何も植えない場合には山の高さを4にできる。<br>* 小農夫(K286)では、林務官の上に追加の木材を置くことはできない。<br>* 種をまくアクションスペースは好きに選べるが、結局は林務官の上に木材を植えることになる。（訳注：何が言いたいのかイマイチ分かりません）<br>* このカードの上の木材は倉庫主(K287)の能力発動チェックには数えない。ゲーム終了時に家具製作所(A7)または製材所のボーナス計算をするときは、林務官のカードの上にある木材も含めてよい。<br>* ゲーム終了時に、木材は小麦としてカウントしない。</div>\
-<div id="ja-text-279" title="279. 学者"><p style="font-style:italic">コスト: なし</p>あなたは石の家に住み次第、毎ラウンドの開始時に食料1を支払い職業カードをプレイするか、コストを払って小さい進歩カードを出せる。<br>* 学者の効果で職業を出すときに本棚(K112)、ぶらつき学生(K275)、パトロン(E192)の能力が起動する。<br>* それぞれのラウンドで、学者の効果を使い最大1枚のカードをプレイすることができる。<br>* 学者の能力で大きい進歩はプレイできない。<br>* 学者の能力で進歩をプレイしたとき、販売人(E179)の能力が起動する。<br>* ラウンドの開始時に受け取る食料を、学者で職業カードを出すための支払いコストに使える。また、ラウンドの開始時に受け取る食料や資材を、小さい進歩カードのコスト支払いに充ててもよい。<br>* 学者の効果で出した職業や小さい進歩がラウンドの開始時に発動する効果を持っていた場合、あなたはカードをプレイしたラウンドの開始時からただちにその効果を適用することを選べる。</div>\
+<div id="ja-text-279" title="279. 学者"><p style="font-style:italic">コスト: なし</p>あなたは石の家に住み次第、毎ラウンドの開始時に食料1を支払い職業カードをプレイするか、コストを払って進歩カードを出せる。<br>* 学者の効果で職業を出すときに本棚(K112)、ぶらつき学生(K275)、パトロン(E192)の能力が起動する。<br>* それぞれのラウンドで、学者の効果を使い最大1枚のカードをプレイすることができる。<br>* 学者の能力で大きい進歩をプレイしてもよい。<br>* 学者の能力で進歩をプレイしたとき、販売人(E179)の能力が起動する。<br>* ラウンドの開始時に受け取る食料を、学者で職業カードを出すための支払いコストに使える。また、ラウンドの開始時に受け取る食料や資材を、進歩カードのコスト支払いに充ててもよい。<br>* 学者の効果で出した職業や進歩がラウンドの開始時に発動する効果を持っていた場合、あなたはカードをプレイしたラウンドの開始時からただちにその効果を適用することを選べる。</div>\
 <div id="ja-text-280" title="280. 革なめし工"><p style="font-style:italic">コスト: なし</p>あなたは猪か牛を食料に換えた場合、それらのコマをこのカードの上に置く。ゲーム終了時に、このカードの上にある家畜マーカーの数でボーナス点を得る。猪6匹以上で3点、4〜5匹で2点、2〜3匹で1点。牛4匹以上で3点、3匹で2点、2匹で1点。<br>* 食料に換えた猪を革なめし工の上に置く場合は、骨細工(K273)、Taxidermist(Z330)、ブラシ作り(E156)の能力には使えない。<br>* 毛皮(K339)を出している場合、毛皮の能力を起動しつつ革なめし工の上に猪マーカーを置ける。<br>* このカードの上にある家畜はゲーム終了時の得点計算には数えない。</div>\
 <div id="ja-text-281" title="281. 行商人"><p style="font-style:italic">コスト: なし</p>あなたは、アクションスペースで「小さい進歩」のアクションを選んだ場合、小さい進歩の代わりに大きい進歩を行うことができる。あなたがアクションスペースで「大きいまたは小さい進歩」のアクションを選んだ場合、小さい進歩を2回行える。<br>* オプション：行商人の能力は1ターンに1回しか使えない。<br>* 行商人と販売人(E179)を両方とも場に出している場合、あなたは「大きいまたは小さい進歩」のアクションスペースで、食料1を支払い最大4回の小さい進歩が行える。または、「小さい進歩」のアクションスペースで食料1を支払い2回の大きい進歩が行える。<br>* 行商人と商人(I228)を両方とも場に出している場合、あなたは「スタートプレイヤー」のアクションスペースを使うときに小さい進歩を3回続けて行える。<br>* 学者(K279)の能力で小さい進歩を出した時は、行商人の能力は起動しない。(訳注：アクションスペースを使っていないからだと思います。)</div>\
 <div id="ja-text-282" title="282. 執事"><p style="font-style:italic">コスト: なし</p>あなたはこのカードをプレイしたらすぐに木材を得る：ラウンド12〜13にプレイしたら木材1、ラウンド9〜11なら木材2、ラウンド6〜8なら木材3、ラウンド6より前なら木材4。ゲーム終了時に家の部屋数が一番多い人は全員3点のボーナスを得る。</div>\
@@ -576,46 +341,3 @@
 <div id="ja-text-341" title="341. ギルド長"><p style="font-style:italic">コスト: なし</p>家具製作所(A7)か家具職人(I258)を出すと木材4を得る。製陶所(A8)か陶工(E214)を出すとレンガ4を得る。かご製作所(A9)かご編み(E183)を出すと葦3を得る。ギルド長を出した時点でこれらのカードがすでに場に出ている場合は、すでに出されているカードごとに対応する資材2を得る。<br>* ギルド長をプレイする前に家具製作所を製材所(K122)にしていた場合でも、木材2を得る。<br>* 資材は、カードを出した後に得る。得られる資材をカードの支払いコストに充ててはならない。</div>\
 <div id="ja-text-342" title="342. 猛獣使い"><p style="font-style:italic">コスト: なし</p>「小劇場」のスペースから食料を取るたび、それを家畜の購入に充てても良い。羊は1匹につき食料2、猪は1匹につき食料2、牛は1匹につき食料3。<br>* アクションスペースに置かれている食料のみを、家畜の購入に使うことができる。たとえば、旅芸人(I237)または踊り手(E212)を場に出している場合に発生する追加の食料は家畜の購入には使えない。<br>* 旅芸人(I237)を場に出している他のプレイヤーが「小劇場」のアクションを行った場合、あなたに食料1を支払う。<br>* 適切な進歩を持っていれば、手に入れた家畜を即座に食料に換えても良い。このとき、農場に家畜を置くスペースがなくてもよい。ただし、この方法で得た食料を猛獣使いの能力に使用することはできない。</div>\
 <div id="ja-text-999" title="999. 物乞い"><p style="font-style:italic">コスト: なし</p>In each harvest, if you can\'t feed your family, you receive a mendicity card for each missing Food.</div>\
-', '\
-<div  id="ja-action-1" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき 3 木を補充する。</div>\
-<div  id="ja-action-2" title="レンガ">このアクションのレンガを全て取る。<br>1 ラウンドにつき 1 レンガを補充する。</div>\
-<div  id="ja-action-3" title="葦">このアクションの葦を全て取る。<br>1 ラウンドにつき 1 葦を補充する。</div>\
-<div  id="ja-action-4" title="漁">このアクションの食糧を全て取る。<br>1 ラウンドにつき 1 食糧を補充する。</div>\
-<div  id="ja-action-5" title="増築 かつ、または 厩建設">増築 1 軒ごとに 2 葦 5 木/レンガ/石を支払う。厩 1 軒ごとに 2 木を支払う。</div>\
-<div  id="ja-action-7" title="小麦">ストックから 1 小麦を取る。</div>\
-<div  id="ja-action-8" title="耕す">空き地を 1 つ、畑にする。</div>\
-<div id="ja-action-11" title="スタートプレイヤー かつ、または 小進捗">スタートプレイヤートークンを取る。その後、手札からひとつ小進捗をプレイしてもよい。</div>\
-<div id="ja-action-12" title="職業">手札からひとつ職業をプレイする。最初の職業はコストなしでプレイできる。以降の職業は 1 食糧を支払う。</div>\
-<div id="ja-action-13" title="日雇い">ストックから 2 食糧を取る。</div>\
-<div id="ja-action-14" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき 2 木を補充する。</div>\
-<div id="ja-action-15" title="レンガ">このアクションのレンガを全て取る。<br>1 ラウンドにつき 1 レンガを補充する。</div>\
-<div id="ja-action-16" title="建築材">ストックから 1 建築材を取る。</div>\
-<div id="ja-action-18" title="職業">手札からひとつ職業をプレイする。それぞれの職業は 2 食糧を支払う。</div>\
-<div id="ja-action-19" title="葦、木と石">このアクションの葦を全て取り、1 木と 1 石をストックから取る。<br>1 ラウンドにつき 1 葦を補充する。</div>\
-<div id="ja-action-20" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき 1 木を補充する。</div>\
-<div id="ja-action-21" title="レンガ">このアクションのレンガを全て取る。<br>1 ラウンドにつき 2 レンガを補充する。</div>\
-<div id="ja-action-22" title="小劇場">このアクションの食糧を全て取る。<br>1 ラウンドにつき 1 食糧を補充する。</div>\
-<div id="ja-action-23" title="職業">手札からひとつ職業をプレイする。<br>最初の 2 つの職業は 1 食料を支払う。以降の職業は 2 食料を支払う。</div>\
-<div id="ja-action-24" title="支給品">ストックから 1 葦、1 石、1 木を取る。</div>\
-<div id="ja-action-25" title="木材">このアクションの木を全て取る。<br>1 ラウンドにつき 4 木を補充する。</div>\
-<div id="ja-action-26" title="レンガ">このアクションのレンガを全て取る。<br>1 ラウンドにつき 3 レンガを補充する。</div>\
-<div id="ja-action-28" title="職業">手札からひとつ職業をプレイする。ラウンド 5 以降であれば、職業をプレイする代わりに家族を増やすこともできる。<br>最初の 2 つの職業は 1 食料を支払う。以降の職業は 2 食料を支払う。</div>\
-<div id="ja-action-29" title="増築/小劇場">2 葦と 5 木/レンガ/石で家を一軒増築する。もしくはこのアクションの食料を全て取る。<br>1 ラウンドにつき 1 食料を補充する。</div>\
-<div id="ja-action-30" title="動物">以下から 1 つ選ぶ：<br>　1 羊と 1 食料を取る。<br>　1 猪を取る。<br>　1 食料を支払い、1 牛を取る。</div>\
-<div id="ja-action-31" title="羊">このアクションの羊を全て取る。<br>1 ラウンドにつき 1 羊を補充する。</div>\
-<div id="ja-action-32" title="進捗">進捗をプレイする。</div>\
-<div id="ja-action-33" title="柵">柵を設置する。<br>柵を設置するためには木と柵が必要。</div>\
-<div id="ja-action-34" title="種をまく かつ、または パンを焼く">あなたの畑に種をまく かつ、または パンを焼く</div>\
-<div id="ja-action-35" title="改築 そして 進捗">改築を行う。その後、手札からひとつ進捗をプレイしてもよい。</div>\
-<div id="ja-action-36" title="家族を増やす そして 小進捗">家族を増やす。その後、手札からひとつ小進捗をプレイしてもよい。</div>\
-<div id="ja-action-37" title="石">このアクションの石を全て取る。<br>1 ラウンドにつき 1 石を補充する。</div>\
-<div id="ja-action-38" title="猪">このアクションの猪を全て取る。<br>1 ラウンドにつき 1 猪を補充する。</div>\
-<div id="ja-action-39" title="野菜">ストックから 1 野菜を取る。</div>\
-<div id="ja-action-40" title="牛">このアクションの牛を全て取る。<br>1 ラウンドにつき 1 牛を補充する。</div>\
-<div id="ja-action-41" title="石">このアクションの石を全て取る。<br>1 ラウンドにつき 1 石を補充する。</div>\
-<div id="ja-action-42" title="耕す かつ、または 種をまく">畑をひとつ耕し、畑に種をまく。</div>\
-<div id="ja-action-43" title="家族を増やす 部屋がなくてもよい"></div>\
-<div id="ja-action-44" title="改築後、柵">改築を行う。その後、柵を設置してもよい。</div>\
-<div id="ja-action-47" title="木">このアクションの木を全て取る。<br>1 ラウンドにつき木を補充する。</div>\
-', jQuery));
-});
