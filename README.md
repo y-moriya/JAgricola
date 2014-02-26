@@ -5,7 +5,7 @@ userscript for http://www.boiteajeux.net/
 
 The MIT License
 
-Copyright (c) 2013 Yu MORIYA
+Copyright (c) 2013+, Contributors and Yu MORIYA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
