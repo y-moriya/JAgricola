@@ -34,6 +34,7 @@
     // Main
     createCardSpace();
     setCardTooltip($('#dvCartesPosees').find('td.clCarteMf')); // 場札
+    setCardTooltip($('#dvAmenagement11Content').find('div.clCarteMf')); // 小進捗プレイウィンドウ
     setCardTooltip($('#dvPanneauAmelioration').find('div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAmelioration') }); // 大進捗
     setCardTooltip($('#dvPanneauMain').find('td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
     setCardTooltip($('#dvPanneauAction').find('div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAction') });       // アクション(カード)
