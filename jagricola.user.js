@@ -34,11 +34,10 @@
     // Main
     createCardSpace();
     setCardTooltip($('#dvCartesPosees').find('td.clCarteMf')); // 場札
-    setCardTooltip($('[id^="dvAction"]').find('div.clCarteMf')); // プレイウィンドウ
     setCardTooltip($('#dvPanneauAmelioration').find('div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAmelioration') }); // 大進捗
     setCardTooltip($('#dvPanneauMain').find('td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
     setCardTooltip($('#dvPanneauAction').find('div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAction') });       // アクション(カード)
-    setCardTooltip($('form[name=fmDraft]').find('div.clCarteMf')); // ドラフト
+    setCardTooltip($('form[name^=fm]').find('div.clCarteMf')); // ドラフト＆プレイウィンドウ
     setActionTooltip($('#dvPanneauAction').find('div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - getLeft('#dvPanneauAction'), width: ACTION_TOOLTIP_WIDTH }); // アクション
     setScoreTooltip($('table.clScore'));
     hookShowExp();
