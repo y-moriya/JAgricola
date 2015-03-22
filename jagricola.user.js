@@ -212,7 +212,7 @@
                 round: round,
                 player: players[i],
                 action: $self.parent().find('div').remove().end().html()
-              };
+              });
             };
           }
         });
