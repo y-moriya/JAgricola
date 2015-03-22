@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JAgricola
 // @namespace   JAgricola
-// @author      @euro_s
+// @author      euro_s
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
 // @version     2.0.3
