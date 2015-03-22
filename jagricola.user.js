@@ -4,7 +4,7 @@
 // @author      euro_s
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     2.0.6
+// @version     2.1.0
 // @require     http://code.jquery.com/jquery-1.8.2.min.js
 // @require     https://raw.github.com/kswedberg/jquery-cluetip/master/jquery.cluetip.min.js
 // ==/UserScript==
@@ -206,7 +206,7 @@
           if ($self.find('div div').length) {
             $self.find('div div').each(function (j) {
               var $self = $(this);
-              id = parseInt($self.html(), 10);
+              id = parseInt($self.html(), 10) - 1;
               actions[id] = {
                 id: id,
                 round: round,
