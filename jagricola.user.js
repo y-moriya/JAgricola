@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        JAgricola
 // @namespace   JAgricola
+// @author      @euro_s
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     2.0.2
+// @version     2.0.3
 // @require     http://code.jquery.com/jquery-1.8.2.min.js
 // @require     https://raw.github.com/kswedberg/jquery-cluetip/master/jquery.cluetip.min.js
-// @grant       hoge
 // ==/UserScript==
 
 ;$(function () {
@@ -18,7 +18,7 @@
         DRAFTMSG = "Choose the improvement and the occupation that you want to add to your hand and confirm.",
         DRAFTWAITINGMSG = "Round #0",
         AUDIO_LIST = {
-            BELL: new Audio("http://heaven.gunjobiyori.com/up1157.wav")
+            BELL: new Audio("http://euros.sakura.ne.jp/data/jagricola_turn.wav")
         },
         CARD_TOOLTIP_WIDTH = 220,
         ACTION_TOOLTIP_WIDTH = 180,
@@ -195,21 +195,24 @@
 
       $self.find('tr.clHistoFonce, tr.clHistoClair').each(function () {
         var $self = $(this),
-            $round = $self.find('td.clHisto[rowspan]');
+            $round = $self.find('td.clHisto[style]');
         if ($round.length) {
           round = $round.text();
         }
 
-        $self.find('td.clHisto:not([rowspan])').each(function (i) {
+        $self.find('td.clHisto').has('div').each(function (i) {
           var $self = $(this),
               id;
-          if ($self.find('div').length) {
-            id = parseInt($self.find('div').text(), 10);
-            actions[id] = {
-              id: id,
-              round: round,
-              player: players[i],
-              action: $self.find('div').remove().end().html()
+          if ($self.find('div div').length) {
+            $self.find('div div').each(function (j) {
+              var $self = $(this);
+              id = parseInt($self.html(), 10);
+              actions[id] = {
+                id: id,
+                round: round,
+                player: players[i],
+                action: $self.parent().find('div').remove().end().html()
+              };
             };
           }
         });
