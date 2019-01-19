@@ -4,7 +4,7 @@
 // @author      euro_s
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     2.1.0
+// @version     2.1.1
 // @require     http://code.jquery.com/jquery-1.8.2.min.js
 // @require     https://raw.github.com/kswedberg/jquery-cluetip/master/jquery.cluetip.min.js
 // ==/UserScript==
@@ -33,7 +33,7 @@
 
     // Main
     createCardSpace();
-    setCardTooltip($('#dvCartesPosees').find('td.clCarteMf')); // 場札
+    setCardTooltip($('#dvCartesPosees').find('div.clCarteMf')); // 場札
     setCardTooltip($('#dvPanneauAmelioration').find('div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAmelioration') }); // 大進捗
     setCardTooltip($('#dvPanneauMain').find('td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
     setCardTooltip($('#dvPanneauAction').find('div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAction') });       // アクション(カード)
