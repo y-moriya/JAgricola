@@ -117,7 +117,7 @@
 
     function hookShowExp() {
         new window.MutationObserver(function(mutations, observer) {
-            setCardTooltip($('#dvCartesPosees').find('td.clCarteMf'), { leftOffset: 170 });
+            setCardTooltip($('#dvCartesPosees').find('div.clCarteMf'), { leftOffset: 170 });
         }).observe($('#dvCartesPosees')[0], { childList: true });
     }
 
