@@ -4,7 +4,7 @@
 // @author      euro_s
 // @description Agricola sites translates to Japanese.
 // @include     http://www.boiteajeux.net/jeux/agr/partie.php*
-// @version     2.1.3
+// @version     2.1.4
 // @require     http://code.jquery.com/jquery-1.8.2.min.js
 // @require     https://raw.github.com/kswedberg/jquery-cluetip/master/jquery.cluetip.min.js
 // ==/UserScript==
@@ -32,10 +32,10 @@
     initialize();
 
     // Main
-    createCardSpace();
+    createCardSpace()
     setCardTooltip($('#dvCartesPosees').find('div.clCarteMf')); // 場札
     setCardTooltip($('#dvPanneauAmelioration').find('div.clCarteMf'), { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAmelioration') }); // 大進捗
-    setCardTooltip($('#dvPanneauMain').find('td.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
+    setCardTooltip($('#dvPanneauMain').find('div.clCarteMf'),          { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauMain') });         // 手札
     setCardTooltip($('#dvPanneauAction').find('div.clCarteMf'),       { leftOffset: CARD_LEFT_OFFSET   - getLeft('#dvPanneauAction') });       // アクション(カード)
     setCardTooltip($('form[name^=fm]').find('div.clCarteMf')); // ドラフト＆プレイウィンドウ
     setActionTooltip($('#dvPanneauAction').find('div.clCaseAction'),  { leftOffset: ACTION_LEFT_OFFSET - getLeft('#dvPanneauAction'), width: ACTION_TOOLTIP_WIDTH }); // アクション
